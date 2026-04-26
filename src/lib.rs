@@ -13,7 +13,19 @@ mod mini_numpy {
 
     #[pyfunction]
     fn multiply_numbers(a: usize, b: usize) -> PyResult<usize>{
-        Ok((a * b))
+        Ok(a * b)
+    }
+
+    /// want to extend this to be generically numeric, will do later
+    #[pyclass]
+    struct MyVector( Vec<i32> );
+
+    #[pymethods]
+    impl MyVector {
+        #[new]
+        fn new(value: Vec<i32>) -> Self {
+            MyVector(value)
+        }
     }
     
 }
