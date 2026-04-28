@@ -3,6 +3,8 @@ use pyo3::prelude::*;
 /// A Python module implemented in Rust.
 #[pymodule]
 mod mini_numpy {
+    use std::iter;
+
     use pyo3::prelude::*;
 
     /// Formats the sum of two numbers as string.
@@ -36,6 +38,15 @@ mod mini_numpy {
                 .join(", ");
 
             format!("[{}]", values)
+        }
+
+        fn __add__(&self, other: &MyVector) -> MyVector {
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+
+            let summed = self_iter.zip(other_iter).map(|(a, b)| a + b).collect();
+
+            MyVector(summed)
         }
     }
 }
