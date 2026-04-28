@@ -3,9 +3,7 @@ use pyo3::prelude::*;
 /// A Python module implemented in Rust.
 #[pymodule]
 mod mini_numpy {
-    use std::iter;
-
-    use pyo3::prelude::*;
+    use pyo3::{exceptions::PyValueError, prelude::*};
 
     /// Formats the sum of two numbers as string.
     #[pyfunction]
@@ -40,13 +38,17 @@ mod mini_numpy {
             format!("[{}]", values)
         }
 
-        fn __add__(&self, other: &MyVector) -> MyVector {
+        fn __add__(&self, other: &MyVector) -> PyResult<MyVector> {
+            if self.0.len() != other.0.len() {
+                return Err(PyValueError::new_err("Lengths must match"));
+            }
+
             let self_iter = self.0.iter();
             let other_iter = other.0.iter();
 
             let summed = self_iter.zip(other_iter).map(|(a, b)| a + b).collect();
 
-            MyVector(summed)
+            Ok(MyVector(summed))
         }
     }
 }
