@@ -5,17 +5,6 @@ use pyo3::prelude::*;
 mod mini_numpy {
     use pyo3::{exceptions::PyValueError, prelude::*};
 
-    /// Formats the sum of two numbers as string.
-    #[pyfunction]
-    fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-        Ok((a + b).to_string())
-    }
-
-    #[pyfunction]
-    fn multiply_numbers(a: usize, b: usize) -> PyResult<usize> {
-        Ok(a * b)
-    }
-
     /// TODO: want to extend this to be generically numeric, will do later
     #[pyclass(sequence)]
     struct MyVector(Vec<i32>);
