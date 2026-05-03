@@ -80,6 +80,19 @@ mod mini_numpy {
             Ok(MyVector(divided))
         }
 
+        fn __mod__(&self, other: &MyVector) -> PyResult<MyVector> {
+            if self.0.len() != other.0.len() {
+                return Err(PyValueError::new_err("Lengths must match"));
+            }
+
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+
+            let modulo = self_iter.zip(other_iter).map(|(a, b)| a % b).collect();
+
+            Ok(MyVector(modulo))
+        }
+
         fn __eq__(&self, other: &MyVector) -> bool {
             if self.0.len() != other.0.len() {
                 return false;
