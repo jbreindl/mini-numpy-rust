@@ -16,7 +16,7 @@ mod mini_numpy {
         Ok(a * b)
     }
 
-    /// want to extend this to be generically numeric, will do later
+    /// TODO: want to extend this to be generically numeric, will do later
     #[pyclass(sequence)]
     struct MyVector(Vec<i32>);
 
@@ -38,6 +38,7 @@ mod mini_numpy {
             format!("[{}]", values)
         }
 
+        /// TODO: add a scalar
         fn __add__(&self, other: &MyVector) -> PyResult<MyVector> {
             if self.0.len() != other.0.len() {
                 return Err(PyValueError::new_err("Lengths must match"));
@@ -49,6 +50,45 @@ mod mini_numpy {
             let summed = self_iter.zip(other_iter).map(|(a, b)| a + b).collect();
 
             Ok(MyVector(summed))
+        }
+
+        fn __mul__(&self, other: &MyVector) -> PyResult<MyVector> {
+            if self.0.len() != other.0.len() {
+                return Err(PyValueError::new_err("Lengths must match"));
+            }
+
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+
+            let multiplied = self_iter.zip(other_iter).map(|(a, b)| a * b).collect();
+
+            Ok(MyVector(multiplied))
+        }
+
+        fn __sub__(&self, other: &MyVector) -> PyResult<MyVector> {
+            if self.0.len() != other.0.len() {
+                return Err(PyValueError::new_err("Lengths must match"));
+            }
+
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+
+            let subtracted = self_iter.zip(other_iter).map(|(a, b)| a - b).collect();
+
+            Ok(MyVector(subtracted))
+        }
+
+        fn __truediv__(&self, other: &MyVector) -> PyResult<MyVector> {
+            if self.0.len() != other.0.len() {
+                return Err(PyValueError::new_err("Lengths must match"));
+            }
+
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+
+            let divided = self_iter.zip(other_iter).map(|(a, b)| a / b).collect();
+
+            Ok(MyVector(divided))
         }
     }
 }
