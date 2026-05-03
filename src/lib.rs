@@ -90,5 +90,21 @@ mod mini_numpy {
 
             Ok(MyVector(divided))
         }
+
+        fn __eq__(&self, other: &MyVector) -> bool {
+            if self.0.len() != other.0.len() {
+                return false;
+            }
+
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+
+            let mut final_bool = true;
+
+            for (a, b) in self_iter.zip(other_iter) {
+                final_bool &= a == b;
+            }
+            final_bool
+        }
     }
 }
