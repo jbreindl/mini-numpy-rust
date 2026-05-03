@@ -2,5 +2,7 @@ import pytest
 import mini_numpy
 
 
-def test_sum_as_string():
-    assert mini_numpy.sum_as_string(1, 1) == "2"
+def test_vector_add():
+    
+    new_vector = mini_numpy.MyVector([1, 2, 3]) + mini_numpy.MyVector([1, 2, 3])
+    assert new_vector == mini_numpy.MyVector([2, 4, 6])
