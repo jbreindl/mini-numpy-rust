@@ -1,13 +1,14 @@
 pub mod vector_ops {
     use num_traits::NumOps;
-    use std::fmt;
 
     pub struct NumericVector<T: NumOps>(Vec<T>);
 
-    impl<T: NumOps + ToString> NumericVector<T> {
+    impl<T: NumOps> NumericVector<T> {
         pub fn new(data: Vec<T>) -> NumericVector<T> {
             NumericVector(data)
         }
+    }
+    impl<T: NumOps + Copy> NumericVector<T> {
         /// Accepts another array and a function f
         pub fn array_arithmetic(
             &self,
@@ -22,6 +23,15 @@ pub mod vector_ops {
                 .map(|(a, b)| f(a, b))
                 .collect::<Vec<_>>();
             NumericVector(result)
+        }
+    }
+
+    impl<T: NumOps + Eq> NumericVector<T> {
+        pub fn is_equal(&self, other: &NumericVector<T>) -> bool {
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+
+            self_iter.zip(other_iter).all(|(a, b)| a == b)
         }
     }
 

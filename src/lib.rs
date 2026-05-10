@@ -137,6 +137,14 @@ mod mini_numpy {
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
         }
+
+        fn __eq__(&self, other: &PyVector) -> PyResult<bool> {
+            let data_pair = (&self.data, &other.data);
+            match data_pair {
+                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(v1.is_equal(v2)),
+                _ => Err(PyTypeError::new_err("Unsupported opperands")),
+            }
+        }
     }
     fn add<T: Add + Copy>(a: &T, b: &T) -> <T as Add>::Output {
         *a + *b
