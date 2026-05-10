@@ -5,11 +5,11 @@ pub mod vecs;
 /// A Python module implemented in Rust.
 #[pymodule]
 mod mini_numpy {
+
+    use std::ops::{Add, Div, Mul, Rem, Sub};
+
     use crate::vecs;
-    use pyo3::{
-        exceptions::{PyTypeError, PyValueError},
-        prelude::*,
-    };
+    use pyo3::{exceptions::PyTypeError, prelude::*};
     use vecs::vector_ops::NumericVector;
 
     #[pyclass(sequence)]
@@ -45,5 +45,114 @@ mod mini_numpy {
                 VectorData::Float(v) => v.to_string(),
             }
         }
+
+        fn __add__(&self, other: &PyVector) -> PyResult<PyVector> {
+            let data_pair = (&self.data, &other.data);
+            match data_pair {
+                (VectorData::Int(v1), VectorData::Int(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, add);
+                    Ok(PyVector {
+                        data: VectorData::Int(new_vec),
+                    })
+                }
+                (VectorData::Float(v1), VectorData::Float(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, add);
+                    Ok(PyVector {
+                        data: VectorData::Float(new_vec),
+                    })
+                }
+                _ => Err(PyTypeError::new_err("Types must match!")),
+            }
+        }
+
+        fn __sub__(&self, other: &PyVector) -> PyResult<PyVector> {
+            let data_pair = (&self.data, &other.data);
+            match data_pair {
+                (VectorData::Int(v1), VectorData::Int(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, sub);
+                    Ok(PyVector {
+                        data: VectorData::Int(new_vec),
+                    })
+                }
+                (VectorData::Float(v1), VectorData::Float(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, sub);
+                    Ok(PyVector {
+                        data: VectorData::Float(new_vec),
+                    })
+                }
+                _ => Err(PyTypeError::new_err("Types must match!")),
+            }
+        }
+        fn __mul__(&self, other: &PyVector) -> PyResult<PyVector> {
+            let data_pair = (&self.data, &other.data);
+            match data_pair {
+                (VectorData::Int(v1), VectorData::Int(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, mul);
+                    Ok(PyVector {
+                        data: VectorData::Int(new_vec),
+                    })
+                }
+                (VectorData::Float(v1), VectorData::Float(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, sub);
+                    Ok(PyVector {
+                        data: VectorData::Float(new_vec),
+                    })
+                }
+                _ => Err(PyTypeError::new_err("Types must match!")),
+            }
+        }
+        fn __div__(&self, other: &PyVector) -> PyResult<PyVector> {
+            let data_pair = (&self.data, &other.data);
+            match data_pair {
+                (VectorData::Int(v1), VectorData::Int(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, div);
+                    Ok(PyVector {
+                        data: VectorData::Int(new_vec),
+                    })
+                }
+                (VectorData::Float(v1), VectorData::Float(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, div);
+                    Ok(PyVector {
+                        data: VectorData::Float(new_vec),
+                    })
+                }
+                _ => Err(PyTypeError::new_err("Types must match!")),
+            }
+        }
+        fn __mod__(&self, other: &PyVector) -> PyResult<PyVector> {
+            let data_pair = (&self.data, &other.data);
+            match data_pair {
+                (VectorData::Int(v1), VectorData::Int(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, rem);
+                    Ok(PyVector {
+                        data: VectorData::Int(new_vec),
+                    })
+                }
+                (VectorData::Float(v1), VectorData::Float(v2)) => {
+                    let new_vec = v1.array_arithmetic(v2, rem);
+                    Ok(PyVector {
+                        data: VectorData::Float(new_vec),
+                    })
+                }
+                _ => Err(PyTypeError::new_err("Types must match!")),
+            }
+        }
+    }
+    fn add<T: Add + Copy>(a: &T, b: &T) -> <T as Add>::Output {
+        *a + *b
+    }
+    fn sub<T: Sub + Copy>(a: &T, b: &T) -> <T as Sub>::Output {
+        *a - *b
+    }
+    fn div<T: Div + Copy>(a: &T, b: &T) -> <T as Div>::Output {
+        *a / *b
+    }
+
+    fn mul<T: Mul + Copy>(a: &T, b: &T) -> <T as Mul>::Output {
+        *a * *b
+    }
+
+    fn rem<T: Rem + Copy>(a: &T, b: &T) -> <T as Rem>::Output {
+        *a % *b
     }
 }

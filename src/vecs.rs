@@ -8,6 +8,21 @@ pub mod vector_ops {
         pub fn new(data: Vec<T>) -> NumericVector<T> {
             NumericVector(data)
         }
+        /// Accepts another array and a function f
+        pub fn array_arithmetic(
+            &self,
+            other: &NumericVector<T>,
+            f: fn(&T, &T) -> T,
+        ) -> NumericVector<T> {
+            let self_iter = self.0.iter();
+            let other_iter = other.0.iter();
+            // map arithmetic function onto both iters
+            let result = self_iter
+                .zip(other_iter)
+                .map(|(a, b)| f(a, b))
+                .collect::<Vec<_>>();
+            NumericVector(result)
+        }
     }
 
     impl<T: NumOps + ToString> ToString for NumericVector<T> {
