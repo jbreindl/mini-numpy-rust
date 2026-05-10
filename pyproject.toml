@@ -7,12 +7,14 @@ name = "mini-numpy"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = ["version"]
+
 [tool.maturin]
 python-source = "python"
+
+[tool.pyo3-stub-gen]
+generate-init-py = true    # Enable for all packages with re-exports
 
 [dependency-groups]
 dev = [

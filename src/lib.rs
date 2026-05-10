@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3_stub_gen::define_stub_info_gatherer;
 
 pub mod vecs;
 
@@ -10,9 +11,12 @@ mod mini_numpy {
 
     use crate::vecs;
     use pyo3::{exceptions::PyTypeError, prelude::*};
+    use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
     use vecs::vector_ops::NumericVector;
 
+    #[gen_stub_pyclass]
     #[pyclass(sequence)]
+    /// Binding into Rust Vectors
     struct PyVector {
         data: VectorData,
     }
@@ -22,6 +26,7 @@ mod mini_numpy {
         Float(NumericVector<f32>),
     }
 
+    #[gen_stub_pymethods]
     #[pymethods]
     impl PyVector {
         #[new]
@@ -164,3 +169,4 @@ mod mini_numpy {
         *a % *b
     }
 }
+define_stub_info_gatherer!(stub_info);
