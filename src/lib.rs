@@ -1,112 +1,49 @@
 use pyo3::prelude::*;
 
+pub mod vecs;
+
 /// A Python module implemented in Rust.
 #[pymodule]
 mod mini_numpy {
-    use pyo3::{exceptions::PyValueError, prelude::*};
+    use crate::vecs;
+    use pyo3::{
+        exceptions::{PyTypeError, PyValueError},
+        prelude::*,
+    };
+    use vecs::vector_ops::NumericVector;
 
-    /// TODO: want to extend this to be generically numeric, will do later
     #[pyclass(sequence)]
-    struct MyVector(Vec<i32>);
+    struct PyVector {
+        data: VectorData,
+    }
+
+    enum VectorData {
+        Int(NumericVector<i32>),
+        Float(NumericVector<f32>),
+    }
 
     #[pymethods]
-    impl MyVector {
+    impl PyVector {
         #[new]
-        fn new(value: Vec<i32>) -> Self {
-            MyVector(value)
+        fn new(input: &Bound<'_, PyAny>) -> PyResult<Self> {
+            if let Ok(input) = input.extract::<Vec<i32>>() {
+                return Ok(Self {
+                    data: VectorData::Int(NumericVector::new(input)),
+                });
+            }
+            if let Ok(input) = input.extract::<Vec<f32>>() {
+                return Ok(Self {
+                    data: VectorData::Float(NumericVector::new(input)),
+                });
+            }
+            Err(PyTypeError::new_err("Type unsupported"))
         }
 
         fn __repr__(&self) -> String {
-            let values = self
-                .0
-                .iter()
-                .map(|v| v.to_string())
-                .collect::<Vec<_>>()
-                .join(", ");
-
-            format!("[{}]", values)
-        }
-
-        /// TODO: add a scalar
-        fn __add__(&self, other: &MyVector) -> PyResult<MyVector> {
-            if self.0.len() != other.0.len() {
-                return Err(PyValueError::new_err("Lengths must match"));
+            match &self.data {
+                VectorData::Int(v) => v.to_string(),
+                VectorData::Float(v) => v.to_string(),
             }
-
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
-
-            let summed = self_iter.zip(other_iter).map(|(a, b)| a + b).collect();
-
-            Ok(MyVector(summed))
-        }
-
-        fn __mul__(&self, other: &MyVector) -> PyResult<MyVector> {
-            if self.0.len() != other.0.len() {
-                return Err(PyValueError::new_err("Lengths must match"));
-            }
-
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
-
-            let multiplied = self_iter.zip(other_iter).map(|(a, b)| a * b).collect();
-
-            Ok(MyVector(multiplied))
-        }
-
-        fn __sub__(&self, other: &MyVector) -> PyResult<MyVector> {
-            if self.0.len() != other.0.len() {
-                return Err(PyValueError::new_err("Lengths must match"));
-            }
-
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
-
-            let subtracted = self_iter.zip(other_iter).map(|(a, b)| a - b).collect();
-
-            Ok(MyVector(subtracted))
-        }
-
-        fn __truediv__(&self, other: &MyVector) -> PyResult<MyVector> {
-            if self.0.len() != other.0.len() {
-                return Err(PyValueError::new_err("Lengths must match"));
-            }
-
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
-
-            let divided = self_iter.zip(other_iter).map(|(a, b)| a / b).collect();
-
-            Ok(MyVector(divided))
-        }
-
-        fn __mod__(&self, other: &MyVector) -> PyResult<MyVector> {
-            if self.0.len() != other.0.len() {
-                return Err(PyValueError::new_err("Lengths must match"));
-            }
-
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
-
-            let modulo = self_iter.zip(other_iter).map(|(a, b)| a % b).collect();
-
-            Ok(MyVector(modulo))
-        }
-
-        fn __eq__(&self, other: &MyVector) -> bool {
-            if self.0.len() != other.0.len() {
-                return false;
-            }
-
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
-
-            let mut final_bool = true;
-
-            for (a, b) in self_iter.zip(other_iter) {
-                final_bool &= a == b;
-            }
-            final_bool
         }
     }
 }
