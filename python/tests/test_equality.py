@@ -1,17 +1,23 @@
-from mini_numpy import MyVector
+import pytest
+from mini_numpy import PyVector
 
 
 def test_should_equal():
-    assert MyVector([1, 2, 3]) == MyVector([1, 2, 3])
+    assert PyVector([1, 2, 3]) == PyVector([1, 2, 3])
 
 
 def test_vector_different_length():
-    assert MyVector([1, 2, 3]) != MyVector([1, 2])
+    assert PyVector([1, 2, 3]) != PyVector([1, 2])
 
 
 def test_vector_scalar():
-    assert MyVector([1, 2, 3]) != 1
+    assert PyVector([1, 2, 3]) != 1
 
 
 def test_different_vector():
-    assert MyVector([1, 2, 3]) != MyVector([3, 2, 1])
+    assert PyVector([1, 2, 3]) != PyVector([3, 2, 1])
+
+
+def test_invalid_type():
+    with pytest.raises(TypeError):
+        PyVector([1.0, 2.0, 3.0]) == PyVector([1.0, 2.0, 3.0])
