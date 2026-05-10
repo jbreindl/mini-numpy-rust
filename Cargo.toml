@@ -9,4 +9,5 @@ name = "mini_numpy"
 crate-type = ["cdylib"]
 
 [dependencies]
+num-traits = "0.2.19"
 pyo3 = "0.28.2"
