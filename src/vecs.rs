@@ -35,6 +35,9 @@ pub mod vector_ops {
 
     impl<T: NumOps + Eq> NumericVector<T> {
         pub fn is_equal(&self, other: &NumericVector<T>) -> bool {
+            if self.0.len() != other.0.len() {
+                return false;
+            }
             let self_iter = self.0.iter();
             let other_iter = other.0.iter();
 
