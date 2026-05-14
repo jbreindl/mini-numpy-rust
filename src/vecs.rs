@@ -1,4 +1,5 @@
 pub mod vector_ops {
+    use crate::errors::VectorError;
     use num_traits::NumOps;
 
     pub struct NumericVector<T: NumOps>(Vec<T>);
@@ -14,7 +15,13 @@ pub mod vector_ops {
             &self,
             other: &NumericVector<T>,
             f: fn(&T, &T) -> T,
-        ) -> NumericVector<T> {
+        ) -> Result<NumericVector<T>, VectorError> {
+            if self.0.len() != other.0.len() {
+                return Err(VectorError::MismatchedLengthError(
+                    self.0.len(),
+                    other.0.len(),
+                ));
+            }
             let self_iter = self.0.iter();
             let other_iter = other.0.iter();
             // map arithmetic function onto both iters
@@ -22,7 +29,7 @@ pub mod vector_ops {
                 .zip(other_iter)
                 .map(|(a, b)| f(a, b))
                 .collect::<Vec<_>>();
-            NumericVector(result)
+            Ok(NumericVector(result))
         }
     }
 

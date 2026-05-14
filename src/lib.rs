@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use pyo3_stub_gen::define_stub_info_gatherer;
 
+pub mod errors;
 pub mod vecs;
 
 /// A Python module implemented in Rust.
@@ -9,8 +10,12 @@ mod mini_numpy {
 
     use std::ops::{Add, Div, Mul, Rem, Sub};
 
+    use crate::errors::VectorError;
     use crate::vecs;
-    use pyo3::{exceptions::PyTypeError, prelude::*};
+    use pyo3::{
+        exceptions::{PyTypeError, PyValueError},
+        prelude::*,
+    };
     use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
     use vecs::vector_ops::NumericVector;
 
@@ -55,13 +60,13 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, add);
+                    let new_vec = v1.array_arithmetic(v2, add)?;
                     Ok(PyVector {
                         data: VectorData::Int(new_vec),
                     })
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, add);
+                    let new_vec = v1.array_arithmetic(v2, add)?;
                     Ok(PyVector {
                         data: VectorData::Float(new_vec),
                     })
@@ -74,13 +79,13 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, sub);
+                    let new_vec = v1.array_arithmetic(v2, sub)?;
                     Ok(PyVector {
                         data: VectorData::Int(new_vec),
                     })
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, sub);
+                    let new_vec = v1.array_arithmetic(v2, sub)?;
                     Ok(PyVector {
                         data: VectorData::Float(new_vec),
                     })
@@ -92,13 +97,13 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, mul);
+                    let new_vec = v1.array_arithmetic(v2, mul)?;
                     Ok(PyVector {
                         data: VectorData::Int(new_vec),
                     })
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, sub);
+                    let new_vec = v1.array_arithmetic(v2, sub)?;
                     Ok(PyVector {
                         data: VectorData::Float(new_vec),
                     })
@@ -110,13 +115,13 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, div);
+                    let new_vec = v1.array_arithmetic(v2, div)?;
                     Ok(PyVector {
                         data: VectorData::Int(new_vec),
                     })
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, div);
+                    let new_vec = v1.array_arithmetic(v2, div)?;
                     Ok(PyVector {
                         data: VectorData::Float(new_vec),
                     })
@@ -128,13 +133,13 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, rem);
+                    let new_vec = v1.array_arithmetic(v2, rem)?;
                     Ok(PyVector {
                         data: VectorData::Int(new_vec),
                     })
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, rem);
+                    let new_vec = v1.array_arithmetic(v2, rem)?;
                     Ok(PyVector {
                         data: VectorData::Float(new_vec),
                     })
