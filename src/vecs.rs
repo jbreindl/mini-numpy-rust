@@ -1,4 +1,6 @@
 pub mod vector_ops {
+    use std::ops::Index;
+
     use crate::errors::VectorError;
     use num_traits::NumOps;
 
@@ -7,6 +9,14 @@ pub mod vector_ops {
     impl<T: NumOps> NumericVector<T> {
         pub fn new(data: Vec<T>) -> NumericVector<T> {
             NumericVector(data)
+        }
+    }
+    // basic indexing
+    impl<T: NumOps> Index<usize> for NumericVector<T> {
+        type Output = T;
+
+        fn index(&self, index: usize) -> &Self::Output {
+            &self.0[index]
         }
     }
     impl<T: NumOps + Copy> NumericVector<T> {
@@ -33,6 +43,7 @@ pub mod vector_ops {
         }
     }
 
+    // Checks if 2 arraysare equal, assuming that's well defined
     impl<T: NumOps + Eq> NumericVector<T> {
         pub fn is_equal(&self, other: &NumericVector<T>) -> bool {
             if self.0.len() != other.0.len() {
@@ -45,6 +56,8 @@ pub mod vector_ops {
         }
     }
 
+    // ability to print the array
+    // This should probably be extended to deal with long vectors
     impl<T: NumOps + ToString> ToString for NumericVector<T> {
         fn to_string(&self) -> String {
             let output = self

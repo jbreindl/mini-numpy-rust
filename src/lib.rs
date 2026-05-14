@@ -10,12 +10,8 @@ mod mini_numpy {
 
     use std::ops::{Add, Div, Mul, Rem, Sub};
 
-    use crate::errors::VectorError;
     use crate::vecs;
-    use pyo3::{
-        exceptions::{PyTypeError, PyValueError},
-        prelude::*,
-    };
+    use pyo3::{IntoPyObjectExt, exceptions::PyTypeError, prelude::*};
     use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
     use vecs::vector_ops::NumericVector;
 
@@ -154,6 +150,20 @@ mod mini_numpy {
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => Ok(v1.is_equal(v2)),
                 _ => Err(PyTypeError::new_err("Unsupported opperands")),
+            }
+        }
+        fn __getitem__<'py>(
+            &self,
+            py: Python<'py>,
+            idx: Bound<'py, PyAny>,
+        ) -> PyResult<Bound<'py, PyAny>> {
+            if let Ok(idx) = idx.extract::<usize>() {
+                match &self.data {
+                    VectorData::Int(vec) => Ok(vec[idx].into_pyobject(py)?.into_any().clone()),
+                    VectorData::Float(vec) => Ok(vec[idx].into_pyobject(py)?.into_any().clone()),
+                }
+            } else {
+                Err(PyTypeError::new_err("Supplied type not supported!"))
             }
         }
     }
