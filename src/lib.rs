@@ -149,7 +149,7 @@ mod mini_numpy {
         }
 
         fn __eq__(&self, other: &PyVector) -> PyResult<bool> {
-            /// This doesn't currently follow the actual numpy semantics that I want to recreate. A problem for another day!
+            // This doesn't currently follow the actual numpy semantics that I want to recreate. A problem for another day!
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => Ok(v1.is_equal(v2)),
