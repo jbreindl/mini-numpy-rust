@@ -111,7 +111,7 @@ mod mini_numpy {
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
         }
-        fn __div__(&self, other: &PyVector) -> PyResult<PyVector> {
+        fn __truediv__(&self, other: &PyVector) -> PyResult<PyVector> {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {

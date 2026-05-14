@@ -10,3 +10,13 @@ def test_vector_add():
 def test_vector_sub():
     new_vector = mini_numpy.PyVector([1, 2, 3]) - mini_numpy.PyVector([1, 2, 3])
     assert new_vector == mini_numpy.PyVector([0, 0, 0])
+
+
+def test_vector_mul():
+    new_vector = mini_numpy.PyVector([1, 2, 3]) * mini_numpy.PyVector([1, 2, 3])
+    assert new_vector == mini_numpy.PyVector([1, 4, 9])
+
+
+def test_vector_div():
+    new_vector = mini_numpy.PyVector([1, 2, 3]) / mini_numpy.PyVector([1, 2, 3])
+    assert new_vector == mini_numpy.PyVector([1, 1, 1])
