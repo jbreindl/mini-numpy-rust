@@ -166,6 +166,27 @@ mod mini_numpy {
                 Err(PyTypeError::new_err("Supplied type not supported!"))
             }
         }
+        fn __setitem__<'py>(
+            &self,
+            py: Python<'py>,
+            idx: Bound<'py, PyAny>,
+            value: Bound<'py, PyAny>,
+        ) -> Result<(), PyErr> {
+            if let Ok(idx) = idx.extract::<usize>() {
+                match &self.data {
+                    VectorData::Int(vec) => {
+                        if let value = Ok(value.extract::<i32>()) {
+                            todo!();
+                        } else {
+                            Err(PyTypeError::new_err("Supplied index not supported!"));
+                        }
+                    }
+                    VectorData::Float(vec) => todo!(),
+                };
+            } else {
+                Err(PyTypeError::new_err("Supplied index not supported!"))
+            }
+        }
     }
     fn add<T: Add + Copy>(a: &T, b: &T) -> <T as Add>::Output {
         *a + *b
