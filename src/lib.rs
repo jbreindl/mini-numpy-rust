@@ -11,7 +11,7 @@ mod mini_numpy {
     use std::ops::{Add, Div, Mul, Rem, Sub};
 
     use crate::vecs;
-    use pyo3::{IntoPyObjectExt, exceptions::PyTypeError, prelude::*};
+    use pyo3::{exceptions::PyTypeError, prelude::*};
     use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
     use vecs::vector_ops::NumericVector;
 
