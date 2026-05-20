@@ -1,5 +1,5 @@
 pub mod vector_ops {
-    use std::ops::Index;
+    use std::ops::{Index, IndexMut};
 
     use crate::errors::VectorError;
     use num_traits::NumOps;
@@ -9,6 +9,11 @@ pub mod vector_ops {
     impl<T: NumOps> NumericVector<T> {
         pub fn new(data: Vec<T>) -> NumericVector<T> {
             NumericVector(data)
+        }
+    }
+    impl<T: NumOps> IndexMut<usize> for NumericVector<T> {
+        fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+            &mut self.0[index]
         }
     }
     // basic indexing

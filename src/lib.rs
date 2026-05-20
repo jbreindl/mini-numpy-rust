@@ -167,22 +167,30 @@ mod mini_numpy {
             }
         }
         fn __setitem__<'py>(
-            &self,
+            &mut self,
             py: Python<'py>,
             idx: Bound<'py, PyAny>,
             value: Bound<'py, PyAny>,
         ) -> Result<(), PyErr> {
             if let Ok(idx) = idx.extract::<usize>() {
-                match &self.data {
+                match &mut self.data {
                     VectorData::Int(vec) => {
-                        if let value = Ok(value.extract::<i32>()) {
-                            todo!();
+                        if let Ok(value) = value.extract::<i32>() {
+                            vec[idx] = value;
+                            Ok(())
                         } else {
-                            Err(PyTypeError::new_err("Supplied index not supported!"));
+                            Err(PyTypeError::new_err("Vector Type Mismatch"))
                         }
                     }
-                    VectorData::Float(vec) => todo!(),
-                };
+                    VectorData::Float(vec) => {
+                        if let Ok(value) = value.extract::<f32>() {
+                            vec[idx] = value;
+                            Ok(())
+                        } else {
+                            Err(PyTypeError::new_err("Vector Type Mismatch"))
+                        }
+                    }
+                }
             } else {
                 Err(PyTypeError::new_err("Supplied index not supported!"))
             }
