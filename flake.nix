@@ -16,6 +16,14 @@
       pkgs = import nixpkgs {
         inherit system overlays;
       };
+
+      libs = with pkgs; [
+        stdenv.cc.cc.lib
+        zlib
+        openssl
+        libffi
+        glibc
+      ];
     in
     {
       devShells.${system}.default =
@@ -26,8 +34,10 @@
             python3Packages.python-dateutil
             rust-bin.beta.latest.default
             just
+            maturin
+            uv
           ];
-
+          env.LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
           # NOTE: the $SHELL variable wasn't playing nicely
           shellHook = ''
             exec zsh
