@@ -9,7 +9,14 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        packages = [ ];
+        packages = [
+          pkgs.python3
+          pkgs.python3Packages.dateutil
+
+        ];
+        nativeBuildInputs = with pkgs; [
+          just
+        ];
         # NOTE: the $SHELL variable wasn't playing nicely
         shellHook = ''
           exec zsh
