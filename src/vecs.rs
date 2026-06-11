@@ -6,7 +6,10 @@ pub mod vector_ops {
     // TODO: housekeeping: print function is gonna get nasty for big arrays
     // TODO: add more interesting operations (norms, Mat Mul, zeros, ones, random, etc.)
     // TODO: add testing suite
-    use std::ops::{Index, IndexMut};
+    use std::{
+        fmt,
+        ops::{Index, IndexMut},
+    };
 
     use crate::errors::VectorError;
     use num_traits::NumOps;
@@ -14,12 +17,25 @@ pub mod vector_ops {
     /// Tensor Type - currently only supports numbers
     /// Inputs are data an optionally a shape
     /// If no shape is provided, the data is assumed to be flat
-    pub struct Tensor<T: NumOps> {
+    pub struct Tensor<T> {
         data: Vec<T>,
         shape: Vec<usize>,
     }
 
-    impl<T: NumOps> Tensor<T> {
+    /// View of a tensor
+    /// Not sure when I would allow this to be seen on the outside
+    struct TensorView<'a, T> {
+        data: &'a [T],
+        shape: Vec<usize>,
+        strides: Vec<usize>,
+        offset: usize,
+    }
+
+    impl<T> Tensor<T> {
+        /// Tensor type
+        /// data: base data to use
+        /// shape: Optional shape info, otherwise extrapolated from data
+        /// TODO: dtype
         pub fn new(data: Vec<T>, shape: Option<Vec<usize>>) -> Tensor<T> {
             match shape {
                 Some(shape) => Tensor { data, shape },
@@ -30,13 +46,26 @@ pub mod vector_ops {
             }
         }
     }
-    impl<T: NumOps> IndexMut<usize> for Tensor<T> {
+
+    impl<T> TensorView<'_, T> {
+        pub fn new(data: &'_[T], shape: Vec<usize>, strides: Vec<usize>, offset: usize) -> TensorView<'_, T> {
+            TensorView{
+                data,
+                shape,
+                strides,
+                offset
+            }
+            
+        }
+    }
+
+    impl<T> IndexMut<usize> for Tensor<T> {
         fn index_mut(&mut self, index: usize) -> &mut Self::Output {
             &mut self.data[index]
         }
     }
 
-    impl<T: NumOps> Index<usize> for Tensor<T> {
+    impl<T> Index<usize> for Tensor<T> {
         type Output = T;
 
         fn index(&self, index: usize) -> &Self::Output {
@@ -85,7 +114,7 @@ pub mod vector_ops {
     }
 
     // ability to print the array
-    impl<T: NumOps + ToString> ToString for Tensor<T> {
+    impl<T + ToString> ToString for Tensor<T> {
         fn to_string(&self) -> String {
             let output = self
                 .data
@@ -94,6 +123,46 @@ pub mod vector_ops {
                 .collect::<Vec<_>>()
                 .join(", ");
             format!("[{}]", output)
+        }
+    }
+    impl<T + ToString> fmt::Display for Tensor<T> {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            view = TensorView{
+                data: &self.data,
+                shape : self.data.shape
+                strides : todo!(),
+                offset : 0,
+            }
+            let mut lengths = self.shape.iter().rev();
+            let chunk_size = *lengths.next().expect("shape not set!");
+
+            // 1d Array case
+            if chunk_size == self.data.len() {
+                // turn every item into string and return that
+                let output = self
+                    .data
+                    .iter()
+                    .map(|v| v.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                write!(f, "{}", format!("[{}]", output));
+                return Ok(());
+            }
+
+            // ndarray case
+            let mut output_str = String::new();
+            output_str += &"[".repeat(self.shape.len() - 1);
+            let chunks = self.data.chunks(chunk_size);
+
+            // extract appropriate number of chunks for this dimension
+
+            todo!()
+        }
+    }
+
+    impl<T + ToString> fmt::Display for TensorView<'_, T> {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            todo!()
         }
     }
 
