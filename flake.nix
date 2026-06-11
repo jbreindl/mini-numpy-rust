@@ -32,7 +32,7 @@
           buildInputs = [
             python3
             python3Packages.python-dateutil
-            rust-bin.beta.latest.default
+            rust-bin.stable.latest.default
             just
             maturin
             uv
