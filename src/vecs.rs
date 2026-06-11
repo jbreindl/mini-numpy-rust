@@ -96,4 +96,19 @@ pub mod vector_ops {
             format!("[{}]", output)
         }
     }
+
+    #[cfg(test)]
+    mod tests {
+
+        use super::*;
+
+        #[test]
+        fn test_creation() {
+            let data = vec![1, 2, 3];
+            let tensor = Tensor::new(data, None);
+
+            assert_eq!(tensor.data, vec![1, 2, 3]);
+            assert_eq!(tensor.shape, vec![3]);
+        }
+    }
 }
