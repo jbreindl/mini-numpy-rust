@@ -1,72 +1,88 @@
+/// Defines operations on Vectors (tensors - need to cleanup the naming throught the project)
 pub mod vector_ops {
+    // TODOS:
+    // TODO: Shape implementation, broadcasting rules
+    // TODO: housekeeping: called many things vectors, this has ended up being a tensor based project
+    // TODO: housekeeping: print function is gonna get nasty for big arrays
+    // TODO: add more interesting operations (norms, Mat Mul, zeros, ones, random, etc.)
+    // TODO: add testing suite
     use std::ops::{Index, IndexMut};
 
     use crate::errors::VectorError;
     use num_traits::NumOps;
 
-    pub struct NumericVector<T: NumOps>(Vec<T>);
+    /// Tensor Type - currently only supports numbers
+    /// Inputs are data an optionally a shape
+    /// If no shape is provided, the data is assumed to be flat
+    pub struct Tensor<T: NumOps> {
+        data: Vec<T>,
+        shape: Option<Vec<usize>>,
+    }
 
-    impl<T: NumOps> NumericVector<T> {
-        pub fn new(data: Vec<T>) -> NumericVector<T> {
-            NumericVector(data)
+    impl<T: NumOps> Tensor<T> {
+        pub fn new(data: Vec<T>, shape: Option<Vec<usize>>) -> Tensor<T> {
+            Tensor { data, shape }
         }
     }
-    impl<T: NumOps> IndexMut<usize> for NumericVector<T> {
+    impl<T: NumOps> IndexMut<usize> for Tensor<T> {
         fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-            &mut self.0[index]
+            &mut self.data[index]
         }
     }
-    // basic indexing
-    impl<T: NumOps> Index<usize> for NumericVector<T> {
+
+    impl<T: NumOps> Index<usize> for Tensor<T> {
         type Output = T;
 
         fn index(&self, index: usize) -> &Self::Output {
-            &self.0[index]
+            &self.data[index]
         }
     }
-    impl<T: NumOps + Copy> NumericVector<T> {
-        /// Accepts another array and a function f
+
+    impl<T: NumOps + Copy> Tensor<T> {
+        /// Accepts another array and a function f, that can be called pairwise
         pub fn array_arithmetic(
             &self,
-            other: &NumericVector<T>,
+            other: &Tensor<T>,
             f: fn(&T, &T) -> T,
-        ) -> Result<NumericVector<T>, VectorError> {
-            if self.0.len() != other.0.len() {
+        ) -> Result<Tensor<T>, VectorError> {
+            if self.data.len() != other.data.len() {
                 return Err(VectorError::MismatchedLengthError(
-                    self.0.len(),
-                    other.0.len(),
+                    self.data.len(),
+                    other.data.len(),
                 ));
             }
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
+            let self_iter = self.data.iter();
+            let other_iter = other.data.iter();
             // map arithmetic function onto both iters
             let result = self_iter
                 .zip(other_iter)
                 .map(|(a, b)| f(a, b))
                 .collect::<Vec<_>>();
-            Ok(NumericVector(result))
+            Ok(Tensor {
+                data: result,
+                shape: None,
+            })
         }
     }
 
     // Checks if 2 arraysare equal, assuming that's well defined
-    impl<T: NumOps + Eq> NumericVector<T> {
-        pub fn is_equal(&self, other: &NumericVector<T>) -> bool {
-            if self.0.len() != other.0.len() {
+    impl<T: NumOps + Eq> Tensor<T> {
+        pub fn is_equal(&self, other: &Tensor<T>) -> bool {
+            if self.data.len() != other.data.len() {
                 return false;
             }
-            let self_iter = self.0.iter();
-            let other_iter = other.0.iter();
+            let self_iter = self.data.iter();
+            let other_iter = other.data.iter();
 
             self_iter.zip(other_iter).all(|(a, b)| a == b)
         }
     }
 
     // ability to print the array
-    // This should probably be extended to deal with long vectors
-    impl<T: NumOps + ToString> ToString for NumericVector<T> {
+    impl<T: NumOps + ToString> ToString for Tensor<T> {
         fn to_string(&self) -> String {
             let output = self
-                .0
+                .data
                 .iter()
                 .map(|v| v.to_string())
                 .collect::<Vec<_>>()

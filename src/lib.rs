@@ -13,7 +13,7 @@ mod mini_numpy {
     use crate::vecs;
     use pyo3::{exceptions::PyTypeError, prelude::*};
     use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
-    use vecs::vector_ops::NumericVector;
+    use vecs::vector_ops::Tensor;
 
     #[gen_stub_pyclass]
     #[pyclass(sequence)]
@@ -23,23 +23,28 @@ mod mini_numpy {
     }
 
     enum VectorData {
-        Int(NumericVector<i32>),
-        Float(NumericVector<f32>),
+        Int(Tensor<i32>),
+        Float(Tensor<f32>),
     }
 
     #[gen_stub_pymethods]
     #[pymethods]
     impl PyVector {
         #[new]
-        fn new(input: &Bound<'_, PyAny>) -> PyResult<Self> {
+        // #[pyo3(signature=(**kwargs))]
+        fn new(
+            // slf: &Bound<'_, Self>,
+            input: &Bound<'_, PyAny>,
+            // kwargs: Option<&Bound<'_, PyDict>>,
+        ) -> PyResult<Self> {
             if let Ok(input) = input.extract::<Vec<i32>>() {
                 return Ok(Self {
-                    data: VectorData::Int(NumericVector::new(input)),
+                    data: VectorData::Int(Tensor::new(input, None)),
                 });
             }
             if let Ok(input) = input.extract::<Vec<f32>>() {
                 return Ok(Self {
-                    data: VectorData::Float(NumericVector::new(input)),
+                    data: VectorData::Float(Tensor::new(input, None)),
                 });
             }
             Err(PyTypeError::new_err("Type unsupported"))
