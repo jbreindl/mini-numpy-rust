@@ -20,6 +20,10 @@ pub mod vector_ops {
     }
 
     impl<T: NumOps> Tensor<T> {
+        /// Tensor type
+        /// data: base data to use
+        /// shape: Optional shape info, otherwise extrapolated from data
+        /// TODO: dtype
         pub fn new(data: Vec<T>, shape: Option<Vec<usize>>) -> Tensor<T> {
             match shape {
                 Some(shape) => Tensor { data, shape },
