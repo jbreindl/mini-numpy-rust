@@ -16,12 +16,18 @@ pub mod vector_ops {
     /// If no shape is provided, the data is assumed to be flat
     pub struct Tensor<T: NumOps> {
         data: Vec<T>,
-        shape: Option<Vec<usize>>,
+        shape: Vec<usize>,
     }
 
     impl<T: NumOps> Tensor<T> {
         pub fn new(data: Vec<T>, shape: Option<Vec<usize>>) -> Tensor<T> {
-            Tensor { data, shape }
+            match shape {
+                Some(shape) => Tensor { data, shape },
+                None => {
+                    let shape = vec![data.len()];
+                    Tensor { data, shape }
+                }
+            }
         }
     }
     impl<T: NumOps> IndexMut<usize> for Tensor<T> {
@@ -60,7 +66,7 @@ pub mod vector_ops {
                 .collect::<Vec<_>>();
             Ok(Tensor {
                 data: result,
-                shape: None,
+                shape: self.shape.clone(),
             })
         }
     }
