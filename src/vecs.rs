@@ -48,14 +48,18 @@ pub mod vector_ops {
     }
 
     impl<T> TensorView<'_, T> {
-        pub fn new(data: &'_[T], shape: Vec<usize>, strides: Vec<usize>, offset: usize) -> TensorView<'_, T> {
-            TensorView{
+        pub fn new(
+            data: &'_ [T],
+            shape: Vec<usize>,
+            strides: Vec<usize>,
+            offset: usize,
+        ) -> TensorView<'_, T> {
+            TensorView {
                 data,
                 shape,
                 strides,
-                offset
+                offset,
             }
-            
         }
     }
 
@@ -73,7 +77,7 @@ pub mod vector_ops {
         }
     }
 
-    impl<T: NumOps + Copy> Tensor<T> {
+    impl<T: Copy> Tensor<T> {
         /// Accepts another array and a function f, that can be called pairwise
         pub fn array_arithmetic(
             &self,
@@ -101,7 +105,7 @@ pub mod vector_ops {
     }
 
     // Checks if 2 arraysare equal, assuming that's well defined
-    impl<T: NumOps + Eq> Tensor<T> {
+    impl<T: Eq> Tensor<T> {
         pub fn is_equal(&self, other: &Tensor<T>) -> bool {
             if self.data.len() != other.data.len() {
                 return false;
@@ -113,54 +117,20 @@ pub mod vector_ops {
         }
     }
 
-    // ability to print the array
-    impl<T + ToString> ToString for Tensor<T> {
-        fn to_string(&self) -> String {
-            let output = self
-                .data
-                .iter()
-                .map(|v| v.to_string())
-                .collect::<Vec<_>>()
-                .join(", ");
-            format!("[{}]", output)
-        }
-    }
-    impl<T + ToString> fmt::Display for Tensor<T> {
+    /// Display array (just calls display for TensorView)
+    impl<T: ToString> fmt::Display for Tensor<T> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            view = TensorView{
+            let view = TensorView {
                 data: &self.data,
-                shape : self.data.shape
-                strides : todo!(),
-                offset : 0,
-            }
-            let mut lengths = self.shape.iter().rev();
-            let chunk_size = *lengths.next().expect("shape not set!");
-
-            // 1d Array case
-            if chunk_size == self.data.len() {
-                // turn every item into string and return that
-                let output = self
-                    .data
-                    .iter()
-                    .map(|v| v.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                write!(f, "{}", format!("[{}]", output));
-                return Ok(());
-            }
-
-            // ndarray case
-            let mut output_str = String::new();
-            output_str += &"[".repeat(self.shape.len() - 1);
-            let chunks = self.data.chunks(chunk_size);
-
-            // extract appropriate number of chunks for this dimension
-
-            todo!()
+                shape: self.shape.clone(),
+                strides: todo!(),
+                offset: 0,
+            };
+            todo!();
         }
     }
 
-    impl<T + ToString> fmt::Display for TensorView<'_, T> {
+    impl<T: ToString> fmt::Display for TensorView<'_, T> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             todo!()
         }
