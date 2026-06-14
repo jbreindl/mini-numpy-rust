@@ -126,7 +126,7 @@ pub mod vector_ops {
                 strides: todo!(),
                 offset: 0,
             };
-            todo!();
+            write!(f, "{}", view)
         }
     }
 
