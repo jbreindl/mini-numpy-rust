@@ -12,7 +12,6 @@ pub mod vector_ops {
     };
 
     use crate::errors::VectorError;
-    use num_traits::NumOps;
 
     /// Tensor Type - currently only supports numbers
     /// Inputs are data an optionally a shape
@@ -20,6 +19,7 @@ pub mod vector_ops {
     pub struct Tensor<T> {
         data: Vec<T>,
         shape: Vec<usize>,
+        strides: Vec<usize>,
     }
 
     /// View of a tensor
@@ -38,27 +38,19 @@ pub mod vector_ops {
         /// TODO: dtype
         pub fn new(data: Vec<T>, shape: Option<Vec<usize>>) -> Tensor<T> {
             match shape {
-                Some(shape) => Tensor { data, shape },
+                Some(shape) => Tensor {
+                    data,
+                    shape: shape.clone(),
+                    strides: compute_strides(&shape),
+                },
                 None => {
                     let shape = vec![data.len()];
-                    Tensor { data, shape }
+                    Tensor {
+                        data,
+                        shape,
+                        strides: vec![1], // for 1d tensor, strides don't need to be defined
+                    }
                 }
-            }
-        }
-    }
-
-    impl<T> TensorView<'_, T> {
-        pub fn new(
-            data: &'_ [T],
-            shape: Vec<usize>,
-            strides: Vec<usize>,
-            offset: usize,
-        ) -> TensorView<'_, T> {
-            TensorView {
-                data,
-                shape,
-                strides,
-                offset,
             }
         }
     }
@@ -92,6 +84,7 @@ pub mod vector_ops {
             }
             let self_iter = self.data.iter();
             let other_iter = other.data.iter();
+
             // map arithmetic function onto both iters
             let result = self_iter
                 .zip(other_iter)
@@ -100,6 +93,7 @@ pub mod vector_ops {
             Ok(Tensor {
                 data: result,
                 shape: self.shape.clone(),
+                strides: self.strides.clone(), // incorrect
             })
         }
     }
@@ -120,20 +114,26 @@ pub mod vector_ops {
     /// Display array (just calls display for TensorView)
     impl<T: ToString> fmt::Display for Tensor<T> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            let view = TensorView {
-                data: &self.data,
-                shape: self.shape.clone(),
-                strides: todo!(),
-                offset: 0,
-            };
-            todo!();
+            // write!(f, "{}", view)
+            todo!()
         }
     }
 
-    impl<T: ToString> fmt::Display for TensorView<'_, T> {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            todo!()
+    /// given a shape array, compute the stride
+    fn compute_strides(shape: &Vec<usize>) -> Vec<usize> {
+        if shape.len() == 1 {
+            return vec![1];
         }
+
+        let mut strides: Vec<usize> = Vec::with_capacity(shape.len());
+        strides.push(1);
+        let shape_iter = shape.iter().skip(1).rev();
+        for shape in shape_iter {
+            strides.push(shape * strides[strides.len() - 1])
+        }
+
+        strides.reverse();
+        strides
     }
 
     #[cfg(test)]
@@ -148,6 +148,23 @@ pub mod vector_ops {
 
             assert_eq!(tensor.data, vec![1, 2, 3]);
             assert_eq!(tensor.shape, vec![3]);
+        }
+
+        #[test]
+        fn test_3d_stride() {
+            let shape: Vec<usize> = vec![1, 3, 3];
+
+            let strides = compute_strides(&shape);
+
+            assert_eq!(strides, vec!(9, 3, 1))
+        }
+
+        #[test]
+        fn test_4d_stride() {
+            let shape: Vec<usize> = vec![1, 2, 3, 4];
+            let strides = compute_strides(&shape);
+
+            assert_eq!(strides, vec!(24, 12, 4, 1))
         }
     }
 }
