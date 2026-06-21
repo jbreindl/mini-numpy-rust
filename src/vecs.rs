@@ -22,15 +22,6 @@ pub mod vector_ops {
         strides: Vec<usize>,
     }
 
-    /// View of a tensor
-    /// Not sure when I would allow this to be seen on the outside
-    struct TensorView<'a, T> {
-        data: &'a [T],
-        shape: Vec<usize>,
-        strides: Vec<usize>,
-        offset: usize,
-    }
-
     impl<T> Tensor<T> {
         /// Tensor type
         /// data: base data to use
@@ -120,7 +111,7 @@ pub mod vector_ops {
     }
 
     /// given a shape array, compute the stride
-    fn compute_strides(shape: &Vec<usize>) -> Vec<usize> {
+    fn compute_strides(shape: &[usize]) -> Vec<usize> {
         if shape.len() == 1 {
             return vec![1];
         }
