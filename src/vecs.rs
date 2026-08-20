@@ -50,6 +50,10 @@ pub mod vector_ops {
                 }
             }
         }
+        pub fn transpose(&mut self) {
+            self.shape.reverse();
+            self.strides.reverse();
+        }
     }
 
     impl<T> IndexMut<usize> for Tensor<T> {
