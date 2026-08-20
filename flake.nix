@@ -24,6 +24,7 @@
         libffi
         glibc
         gdb
+        lldb
       ];
     in
     {
@@ -38,6 +39,7 @@
             maturin
             uv
             gdb
+            lldb
           ];
           env.LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
           # NOTE: the $SHELL variable wasn't playing nicely
