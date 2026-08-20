@@ -9,7 +9,7 @@ pub mod vector_ops {
     // TODO: add testing suite
     use std::{
         fmt,
-        ops::{Index, IndexMut, Range},
+        ops::{Index, IndexMut},
     };
 
     use crate::errors::VectorError;
@@ -122,19 +122,37 @@ pub mod vector_ops {
                 }
 
                 // update offset state
-                // offsets are correct(?), but string semantics are wrong
                 for i in (0..num_dims).rev() {
-                    println!("Current index: {:?}", index);
                     index[i] += 1;
                     if index[i] < self.shape[i] {
-                        output_str.push_str(", ");
                         break;
                     } else {
                         index[i] = 0;
-                        output_str.push_str("]");
-                        output_str.push_str(&" ".repeat(i));
-                        output_str.push('[')
                     }
+                }
+
+                // update string
+                // TODO: this might be doable within the update step
+                let mut encountered_unfinished = false;
+                let mut parens_closed = 0;
+                for i in (0..num_dims).rev() {
+                    let cur_idx = index[i];
+                    match (cur_idx, encountered_unfinished) {
+                        (0, false) => {
+                            output_str.push(']');
+                            parens_closed += 1;
+                        }
+                        (_, false) => {
+                            encountered_unfinished = true;
+                            output_str.push_str(", ");
+                        }
+                        (_, true) => {}
+                    }
+                }
+                if index.iter().sum::<usize>() != 0 && parens_closed > 0 {
+                    output_str.push('\n');
+                    output_str.push_str(&" ".repeat(num_dims - parens_closed));
+                    output_str.push_str(&"[".repeat(parens_closed))
                 }
             }
             write!(f, "{output_str}")
