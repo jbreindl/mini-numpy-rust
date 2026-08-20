@@ -23,6 +23,7 @@
         openssl
         libffi
         glibc
+        gdb
       ];
     in
     {
@@ -36,6 +37,7 @@
             just
             maturin
             uv
+            gdb
           ];
           env.LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
           # NOTE: the $SHELL variable wasn't playing nicely
