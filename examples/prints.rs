@@ -4,14 +4,21 @@ fn main() {
     {
         println!("2d Tensor:");
         let shape: Vec<usize> = vec![2, 3];
-        let tensor = vector_ops::Tensor::new(vec![1, 2, 3, 4, 5, 6], Some(shape));
+        let tensor = vector_ops::Tensor::new((0..6).collect(), Some(shape));
         println!("{tensor}")
     }
     // 3d
     {
         println!("3d Tensor:");
         let shape: Vec<usize> = vec![2, 2, 2];
-        let tensor = vector_ops::Tensor::new(vec![1, 2, 3, 4, 5, 6, 7, 8], Some(shape));
+        let tensor = vector_ops::Tensor::new((0..8).collect(), Some(shape));
+        println!("{tensor}")
+    }
+    // 4d
+    {
+        println!("4d Tensor:");
+        let shape: Vec<usize> = vec![2, 2, 2, 2];
+        let tensor = vector_ops::Tensor::new((0..16).collect(), Some(shape));
         println!("{tensor}")
     }
 }
