@@ -1,6 +1,7 @@
 /// Defines operations on Vectors (tensors - need to cleanup the naming throught the project)
 pub mod vector_ops {
     // TODOS:
+    // TODO: fancy indexing
     // TODO: Shape implementation, broadcasting rules
     // TODO: housekeeping: called many things vectors, this has ended up being a tensor based project
     // TODO: housekeeping: print function is gonna get nasty for big arrays
@@ -8,7 +9,7 @@ pub mod vector_ops {
     // TODO: add testing suite
     use std::{
         fmt,
-        ops::{Index, IndexMut},
+        ops::{Index, IndexMut, Range},
     };
 
     use crate::errors::VectorError;
@@ -89,8 +90,8 @@ pub mod vector_ops {
         }
     }
 
-    // Checks if 2 arraysare equal, assuming that's well defined
     impl<T: Eq> Tensor<T> {
+        /// Checks if 2 arrays are equal, assuming that's well defined
         pub fn is_equal(&self, other: &Tensor<T>) -> bool {
             if self.data.len() != other.data.len() {
                 return false;
@@ -102,11 +103,41 @@ pub mod vector_ops {
         }
     }
 
-    /// Display array (just calls display for TensorView)
-    impl<T: ToString> fmt::Display for Tensor<T> {
+    /// Display array
+    impl<T: ToString + Copy> fmt::Display for Tensor<T> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            // write!(f, "{}", view)
-            todo!()
+            let num_dims = self.shape.len();
+            let mut output_str = "[".repeat(num_dims);
+            let mut index: Vec<usize> = vec![0; num_dims];
+            let total_elements: usize = self.shape.iter().product();
+
+            for _i in 0..total_elements {
+                let mut offset: usize = 0;
+                for (axis, stride) in std::iter::zip(&index, &self.strides) {
+                    offset += axis * stride;
+                }
+                {
+                    let data = self.data[offset];
+                    output_str.push_str(&data.to_string());
+                }
+
+                // update offset state
+                // offsets are correct(?), but string semantics are wrong
+                for i in (0..num_dims).rev() {
+                    println!("Current index: {:?}", index);
+                    index[i] += 1;
+                    if index[i] < self.shape[i] {
+                        output_str.push_str(", ");
+                        break;
+                    } else {
+                        index[i] = 0;
+                        output_str.push_str("]");
+                        output_str.push_str(&" ".repeat(i));
+                        output_str.push('[')
+                    }
+                }
+            }
+            write!(f, "{output_str}")
         }
     }
 
