@@ -4,7 +4,6 @@ pub mod vector_ops {
     // TODO: fancy indexing
     // TODO: Shape implementation, broadcasting rules
     // TODO: housekeeping: called many things vectors, this has ended up being a tensor based project
-    // TODO: housekeeping: print function is gonna get nasty for big arrays
     // TODO: add more interesting operations (norms, Mat Mul, zeros, ones, random, etc.)
     // TODO: add testing suite
     use std::{
@@ -30,11 +29,17 @@ pub mod vector_ops {
         /// TODO: dtype
         pub fn new(data: Vec<T>, shape: Option<Vec<usize>>) -> Tensor<T> {
             match shape {
-                Some(shape) => Tensor {
-                    data,
-                    shape: shape.clone(),
-                    strides: compute_strides(&shape),
-                },
+                Some(shape) => {
+                    if data.len() != shape.iter().product::<usize>() {
+                        // TODO this shouldn't panic
+                        panic!()
+                    }
+                    Tensor {
+                        data,
+                        shape: shape.clone(),
+                        strides: compute_strides(&shape),
+                    }
+                }
                 None => {
                     let shape = vec![data.len()];
                     Tensor {
