@@ -2,14 +2,15 @@
 pub mod vector_ops {
     // TODOS:
     // TODO: fancy indexing
-    // TODO: Shape implementation, broadcasting rules
     // TODO: housekeeping: called many things vectors, this has ended up being a tensor based project
     // TODO: add more interesting operations (norms, Mat Mul, zeros, ones, random, etc.)
     // TODO: add testing suite
     use std::{
         fmt,
-        ops::{Index, IndexMut},
+        ops::{Add, Div, Index, IndexMut, Mul, Sub},
     };
+
+    use num_traits::{One, Zero};
 
     use crate::errors::VectorError;
 
@@ -20,6 +21,23 @@ pub mod vector_ops {
         data: Vec<T>,
         shape: Vec<usize>,
         strides: Vec<usize>,
+    }
+
+    impl<T: Zero + One + Copy> Tensor<T> {
+        pub fn zeros(shape: &[usize]) -> Tensor<T> {
+            Tensor::full(T::zero(), shape)
+        }
+        pub fn ones(shape: &[usize]) -> Tensor<T> {
+            Tensor::full(T::one(), shape)
+        }
+
+        /// Returns array filled with value and shape
+        pub fn full(value: T, shape: &[usize]) -> Tensor<T> {
+            Tensor::new(
+                vec![value; shape.iter().product::<usize>()],
+                Some(shape.to_owned()),
+            )
+        }
     }
 
     impl<T> Tensor<T> {
@@ -125,6 +143,38 @@ pub mod vector_ops {
                 }
             }
             Ok(Tensor::new(output_data, None))
+        }
+    }
+
+    impl<T: Add<Output = T> + Copy> Add for &Tensor<T> {
+        type Output = Result<Tensor<T>, VectorError>;
+
+        fn add(self, rhs: Self) -> Self::Output {
+            self.array_arithmetic(rhs, |a, b| (*a + *b))
+        }
+    }
+
+    impl<T: Sub<Output = T> + Copy> Sub for &Tensor<T> {
+        type Output = Result<Tensor<T>, VectorError>;
+
+        fn sub(self, rhs: Self) -> Self::Output {
+            self.array_arithmetic(rhs, |a, b| (*a - *b))
+        }
+    }
+
+    impl<T: Mul<Output = T> + Copy> Mul for &Tensor<T> {
+        type Output = Result<Tensor<T>, VectorError>;
+
+        fn mul(self, rhs: Self) -> Self::Output {
+            self.array_arithmetic(rhs, |a, b| (*a * *b))
+        }
+    }
+
+    impl<T: Div<Output = T> + Copy> Div for &Tensor<T> {
+        type Output = Result<Tensor<T>, VectorError>;
+
+        fn div(self, rhs: Self) -> Self::Output {
+            self.array_arithmetic(rhs, |a, b| (*a / *b))
         }
     }
 
@@ -243,6 +293,33 @@ pub mod vector_ops {
             let strides = compute_strides(&shape);
 
             assert_eq!(strides, vec!(24, 12, 4, 1))
+        }
+        #[test]
+        fn test_1d_full() {
+            let t = Tensor::full(10, &vec![5]);
+            assert!(t.data.into_iter().zip(vec![10; 5]).all(|(a, b)| a == b))
+        }
+        #[test]
+        fn test_2d_full() {
+            let t = Tensor::full(5.0, &vec![5, 5]);
+            // TODO: comparing floats is evil
+            assert!(t.data.into_iter().zip(vec![5.0; 25]).all(|(a, b)| a == b))
+        }
+        #[test]
+        fn test_1d_arithmetic() {
+            let t1 = Tensor::<i64>::ones(&[5]);
+            let t2 = Tensor::<i64>::ones(&[5]);
+            let t3 = (&t1 + &t2).unwrap();
+
+            assert!(t3.data.into_iter().zip(vec![2; 5]).all(|(a, b)| a == b))
+        }
+        #[test]
+        fn test_2d_arithmetic() {
+            let t1 = Tensor::<i64>::full(4, &[5, 5]);
+            let t2 = Tensor::<i64>::full(4, &[5, 5]);
+            let t3 = (&t1 * &t2).unwrap();
+
+            assert!(t3.data.into_iter().zip(vec![16; 25]).all(|(a, b)| a == b))
         }
     }
 }
