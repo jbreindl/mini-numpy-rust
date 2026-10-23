@@ -77,25 +77,54 @@ pub mod vector_ops {
             other: &Tensor<T>,
             f: fn(&T, &T) -> T,
         ) -> Result<Tensor<T>, VectorError> {
+            // fast path: 2 arrays with the same shape can just be zipped
+            if self.data.len() == other.data.len() && self.strides == other.strides {
+                let self_iter = self.data.iter();
+                let other_iter = other.data.iter();
+
+                // map arithmetic function onto both iters
+                let result = self_iter
+                    .zip(other_iter)
+                    .map(|(a, b)| f(a, b))
+                    .collect::<Vec<_>>();
+                return Ok(Tensor {
+                    data: result,
+                    shape: self.shape.clone(),
+                    strides: self.strides.clone(),
+                });
+            }
             if self.data.len() != other.data.len() {
                 return Err(VectorError::MismatchedLengthError(
                     self.data.len(),
                     other.data.len(),
                 ));
-            }
-            let self_iter = self.data.iter();
-            let other_iter = other.data.iter();
+            };
 
-            // map arithmetic function onto both iters
-            let result = self_iter
-                .zip(other_iter)
-                .map(|(a, b)| f(a, b))
-                .collect::<Vec<_>>();
-            Ok(Tensor {
-                data: result,
-                shape: self.shape.clone(),
-                strides: self.strides.clone(), // incorrect
-            })
+            let num_dims = self.shape.len();
+            let mut index: Vec<usize> = vec![0; num_dims];
+            let total_elements: usize = self.shape.iter().product();
+            let mut output_data: Vec<T> = Vec::with_capacity(total_elements);
+
+            for _i in 0..total_elements {
+                let mut offset: usize = 0;
+                for (axis, stride) in std::iter::zip(&index, &self.strides) {
+                    offset += axis * stride;
+                }
+                {
+                    output_data.push(f(&self.data[offset], &other.data[offset]));
+                }
+
+                // update offset state
+                for i in (0..num_dims).rev() {
+                    index[i] += 1;
+                    if index[i] < self.shape[i] {
+                        break;
+                    } else {
+                        index[i] = 0;
+                    }
+                }
+            }
+            Ok(Tensor::new(output_data, None))
         }
     }
 
