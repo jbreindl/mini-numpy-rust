@@ -72,6 +72,64 @@ pub mod vector_ops {
             self.shape.reverse();
             self.strides.reverse();
         }
+
+        pub fn value_iter(&self) -> ValueIter<'_, T> {
+            ValueIter::new(&self)
+        }
+    }
+
+    pub struct ValueIter<'a, T> {
+        tensor: &'a Tensor<T>,
+        index: Vec<usize>,
+        offset: usize,
+        axis: usize,
+        stride: usize,
+        done: bool,
+        shape_len: usize,
+    }
+
+    impl<'a, T> ValueIter<'a, T> {
+        pub fn new(tensor: &'a Tensor<T>) -> ValueIter<'a, T> {
+            let shape_len = tensor.shape.len();
+            ValueIter {
+                tensor,
+                index: vec![0; shape_len],
+                offset: 0,
+                axis: shape_len - 1,
+                stride: tensor.strides[shape_len - 1],
+                done: false,
+                shape_len: shape_len,
+            }
+        }
+    }
+
+    impl<'a, T> Iterator for ValueIter<'a, T> {
+        type Item = &'a T;
+
+        fn next(&mut self) -> Option<Self::Item> {
+            if self.done {
+                return None;
+            }
+            // compute current offset
+            self.offset += self.axis * self.stride;
+            let shape = &self.tensor.shape;
+
+            // update offset state
+            for i in (0..self.shape_len).rev() {
+                self.index[i] += 1;
+                if self.index[i] < shape[i] {
+                    self.axis = i;
+                    self.stride = self.tensor.strides[i];
+                    break;
+                } else {
+                    self.index[i] = 0;
+                    if i == 0 {
+                        self.done = true;
+                    }
+                }
+            }
+            Some(&self.tensor.data[self.offset])
+        }
     }
 
     impl<T> IndexMut<usize> for Tensor<T> {
@@ -95,8 +153,9 @@ pub mod vector_ops {
             other: &Tensor<T>,
             f: fn(&T, &T) -> T,
         ) -> Result<Tensor<T>, VectorError> {
-            // fast path: 2 arrays with the same shape can just be zipped
-            if self.data.len() == other.data.len() && self.strides == other.strides {
+            // fast path: 2 arrays with the same shape and strides can just be zipped
+            // temporarily disabled to verify logic
+            if false {
                 let self_iter = self.data.iter();
                 let other_iter = other.data.iter();
 
@@ -118,31 +177,13 @@ pub mod vector_ops {
                 ));
             };
 
-            let num_dims = self.shape.len();
-            let mut index: Vec<usize> = vec![0; num_dims];
-            let total_elements: usize = self.shape.iter().product();
-            let mut output_data: Vec<T> = Vec::with_capacity(total_elements);
-
-            for _i in 0..total_elements {
-                let mut offset: usize = 0;
-                for (axis, stride) in std::iter::zip(&index, &self.strides) {
-                    offset += axis * stride;
-                }
-                {
-                    output_data.push(f(&self.data[offset], &other.data[offset]));
-                }
-
-                // update offset state
-                for i in (0..num_dims).rev() {
-                    index[i] += 1;
-                    if index[i] < self.shape[i] {
-                        break;
-                    } else {
-                        index[i] = 0;
-                    }
-                }
-            }
-            Ok(Tensor::new(output_data, None))
+            let self_iter = self.value_iter();
+            let other_iter = other.data.iter();
+            let result = self_iter
+                .zip(other_iter)
+                .map(|(a, b)| f(a, b))
+                .collect::<Vec<_>>();
+            Ok(Tensor::new(result, Some(self.shape.clone())))
         }
     }
 
