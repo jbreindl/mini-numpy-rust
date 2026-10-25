@@ -7,7 +7,7 @@ pub mod vector_ops {
     // TODO: add testing suite
     use std::{
         fmt,
-        ops::{Add, Div, Index, IndexMut, Mul, Sub},
+        ops::{Add, Div, Index, IndexMut, Mul, Rem, Sub},
     };
 
     use num_traits::{One, Zero};
@@ -191,7 +191,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn add(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| (*a + *b))
+            self.array_arithmetic(rhs, |a, b| *a + *b)
         }
     }
 
@@ -199,7 +199,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn sub(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| (*a - *b))
+            self.array_arithmetic(rhs, |a, b| *a - *b)
         }
     }
 
@@ -207,7 +207,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn mul(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| (*a * *b))
+            self.array_arithmetic(rhs, |a, b| *a * *b)
         }
     }
 
@@ -215,15 +215,15 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn div(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| (*a / *b))
+            self.array_arithmetic(rhs, |a, b| *a / *b)
         }
     }
 
-    impl<T: Rem<Output = T> + Copy> Div for &Tensor<T> {
+    impl<T: Rem<Output = T> + Copy> Rem for &Tensor<T> {
         type Output = Result<Tensor<T>, VectorError>;
 
-        fn div(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| (*a % *b))
+        fn rem(self, rhs: Self) -> Self::Output {
+            self.array_arithmetic(rhs, |a, b| *a % *b)
         }
     }
 
