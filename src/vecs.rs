@@ -219,6 +219,14 @@ pub mod vector_ops {
         }
     }
 
+    impl<T: Rem<Output = T> + Copy> Div for &Tensor<T> {
+        type Output = Result<Tensor<T>, VectorError>;
+
+        fn div(self, rhs: Self) -> Self::Output {
+            self.array_arithmetic(rhs, |a, b| (*a % *b))
+        }
+    }
+
     impl<T: Eq> Tensor<T> {
         /// Checks if 2 arrays are equal, assuming that's well defined
         pub fn is_equal(&self, other: &Tensor<T>) -> bool {
