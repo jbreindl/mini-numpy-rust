@@ -31,20 +31,26 @@ mod mini_numpy {
     #[pymethods]
     impl PyVector {
         #[new]
-        // #[pyo3(signature=(**kwargs))]
-        fn new(
-            // slf: &Bound<'_, Self>,
-            input: &Bound<'_, PyAny>,
-            // kwargs: Option<&Bound<'_, PyDict>>,
-        ) -> PyResult<Self> {
+        #[pyo3(signature=(input, shape=None))]
+        fn new(input: &Bound<'_, PyAny>, shape: Option<&Bound<'_, PyAny>>) -> PyResult<Self> {
+            let shape: Option<Vec<usize>> = match shape {
+                Some(shape) => {
+                    if let Ok(shape) = shape.extract::<Vec<usize>>() {
+                        Some(shape)
+                    } else {
+                        return Err(PyTypeError::new_err("Shape is not of correct type"));
+                    }
+                }
+                None => None,
+            };
             if let Ok(input) = input.extract::<Vec<i32>>() {
                 return Ok(Self {
-                    data: VectorData::Int(Tensor::new(input, None)),
+                    data: VectorData::Int(Tensor::new(input, shape)),
                 });
             }
             if let Ok(input) = input.extract::<Vec<f32>>() {
                 return Ok(Self {
-                    data: VectorData::Float(Tensor::new(input, None)),
+                    data: VectorData::Float(Tensor::new(input, shape)),
                 });
             }
             Err(PyTypeError::new_err("Type unsupported"))
