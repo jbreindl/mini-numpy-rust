@@ -61,16 +61,28 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, add)?;
-                    Ok(PyVector {
-                        data: VectorData::Int(new_vec),
-                    })
+                    let new_vec = v1 + v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Int(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, add)?;
-                    Ok(PyVector {
-                        data: VectorData::Float(new_vec),
-                    })
+                    let new_vec = v1 + v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Float(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
@@ -80,16 +92,28 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, sub)?;
-                    Ok(PyVector {
-                        data: VectorData::Int(new_vec),
-                    })
+                    let new_vec = v1 - v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Int(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, sub)?;
-                    Ok(PyVector {
-                        data: VectorData::Float(new_vec),
-                    })
+                    let new_vec = v1 - v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Float(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
@@ -98,16 +122,28 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, mul)?;
-                    Ok(PyVector {
-                        data: VectorData::Int(new_vec),
-                    })
+                    let new_vec = v1 * v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Int(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, sub)?;
-                    Ok(PyVector {
-                        data: VectorData::Float(new_vec),
-                    })
+                    let new_vec = v1 * v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Float(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
@@ -116,16 +152,28 @@ mod mini_numpy {
             let data_pair = (&self.data, &other.data);
             match data_pair {
                 (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, div)?;
-                    Ok(PyVector {
-                        data: VectorData::Int(new_vec),
-                    })
+                    let new_vec = v1 / v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Int(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1.array_arithmetic(v2, div)?;
-                    Ok(PyVector {
-                        data: VectorData::Float(new_vec),
-                    })
+                    let new_vec = v1 / v2;
+
+                    match new_vec {
+                        Ok(new_vec) => Ok(PyVector {
+                            data: VectorData::Float(new_vec),
+                        }),
+                        Err(e) => {
+                            todo!()
+                        }
+                    }
                 }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
