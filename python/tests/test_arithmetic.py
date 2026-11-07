@@ -1,5 +1,4 @@
 import mini_numpy
-import pytest
 
 
 def test_vector_add():
@@ -20,3 +19,10 @@ def test_vector_mul():
 def test_vector_div():
     new_vector = mini_numpy.PyVector([1, 2, 3]) / mini_numpy.PyVector([1, 2, 3])
     assert new_vector == mini_numpy.PyVector([1, 1, 1])
+
+
+def test_2d_add():
+    new_vector = mini_numpy.PyVector(
+        [1, 2, 3, 4, 5, 6], shape=(2, 3)
+    ) + mini_numpy.PyVector([1, 2, 3, 4, 5, 6], (2, 3))
+    assert new_vector == mini_numpy.PyVector([2, 4, 6, 8, 10, 12], (2, 3))
