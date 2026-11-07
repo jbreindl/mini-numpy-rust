@@ -40,7 +40,7 @@ pub mod vector_ops {
         }
     }
 
-    impl<T> Tensor<T> {
+    impl<T: Copy> Tensor<T> {
         /// Tensor type
         /// data: base data to use
         /// shape: Optional shape info, otherwise extrapolated from data
@@ -50,6 +50,7 @@ pub mod vector_ops {
                 Some(shape) => {
                     if data.len() != shape.iter().product::<usize>() {
                         // TODO this shouldn't panic
+                        println!("Shape is not possible, panicing!");
                         panic!()
                     }
                     Tensor {
@@ -74,7 +75,7 @@ pub mod vector_ops {
         }
 
         pub fn value_iter(&self) -> ValueIter<'_, T> {
-            ValueIter::new(&self)
+            ValueIter::new(self)
         }
     }
 
@@ -82,44 +83,44 @@ pub mod vector_ops {
         tensor: &'a Tensor<T>,
         index: Vec<usize>,
         offset: usize,
-        axis: usize,
-        stride: usize,
         done: bool,
         shape_len: usize,
     }
 
-    impl<'a, T> ValueIter<'a, T> {
+    impl<'a, T: Copy> ValueIter<'a, T> {
         pub fn new(tensor: &'a Tensor<T>) -> ValueIter<'a, T> {
             let shape_len = tensor.shape.len();
             ValueIter {
                 tensor,
                 index: vec![0; shape_len],
                 offset: 0,
-                axis: shape_len - 1,
-                stride: tensor.strides[shape_len - 1],
                 done: false,
-                shape_len: shape_len,
+                shape_len,
             }
         }
     }
 
-    impl<'a, T> Iterator for ValueIter<'a, T> {
-        type Item = &'a T;
+    impl<'a, T: Copy> Iterator for ValueIter<'a, T> {
+        type Item = T;
 
         fn next(&mut self) -> Option<Self::Item> {
             if self.done {
                 return None;
             }
             // compute current offset
-            self.offset += self.axis * self.stride;
+            self.offset = self
+                .index
+                .iter()
+                .zip(self.tensor.strides.iter())
+                .map(|(a, b)| *a * *b)
+                .sum::<usize>();
+
             let shape = &self.tensor.shape;
 
             // update offset state
             for i in (0..self.shape_len).rev() {
                 self.index[i] += 1;
                 if self.index[i] < shape[i] {
-                    self.axis = i;
-                    self.stride = self.tensor.strides[i];
                     break;
                 } else {
                     self.index[i] = 0;
@@ -128,7 +129,7 @@ pub mod vector_ops {
                     }
                 }
             }
-            Some(&self.tensor.data[self.offset])
+            Some(self.tensor.data[self.offset])
         }
     }
 
@@ -151,25 +152,25 @@ pub mod vector_ops {
         pub fn array_arithmetic(
             &self,
             other: &Tensor<T>,
-            f: fn(&T, &T) -> T,
+            f: fn(T, T) -> T,
         ) -> Result<Tensor<T>, VectorError> {
             // fast path: 2 arrays with the same shape and strides can just be zipped
             // temporarily disabled to verify logic
-            if false {
-                let self_iter = self.data.iter();
-                let other_iter = other.data.iter();
-
-                // map arithmetic function onto both iters
-                let result = self_iter
-                    .zip(other_iter)
-                    .map(|(a, b)| f(a, b))
-                    .collect::<Vec<_>>();
-                return Ok(Tensor {
-                    data: result,
-                    shape: self.shape.clone(),
-                    strides: self.strides.clone(),
-                });
-            }
+            // if false {
+            //     let self_iter = self.data.iter();
+            //     let other_iter = other.data.iter();
+            //
+            //     // map arithmetic function onto both iters
+            //     let result = self_iter
+            //         .zip(other_iter)
+            //         .map(|(a, b)| f(a, b))
+            //         .collect::<Vec<_>>();
+            //     return Ok(Tensor {
+            //         data: result,
+            //         shape: self.shape.clone(),
+            //         strides: self.strides.clone(),
+            //     });
+            // }
             if self.data.len() != other.data.len() {
                 return Err(VectorError::MismatchedLengthError(
                     self.data.len(),
@@ -178,7 +179,7 @@ pub mod vector_ops {
             };
 
             let self_iter = self.value_iter();
-            let other_iter = other.data.iter();
+            let other_iter = other.value_iter();
             let result = self_iter
                 .zip(other_iter)
                 .map(|(a, b)| f(a, b))
@@ -191,7 +192,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn add(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| *a + *b)
+            self.array_arithmetic(rhs, |a, b| a + b)
         }
     }
 
@@ -199,7 +200,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn sub(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| *a - *b)
+            self.array_arithmetic(rhs, |a, b| a - b)
         }
     }
 
@@ -207,7 +208,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn mul(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| *a * *b)
+            self.array_arithmetic(rhs, |a, b| a * b)
         }
     }
 
@@ -215,7 +216,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn div(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| *a / *b)
+            self.array_arithmetic(rhs, |a, b| a / b)
         }
     }
 
@@ -223,7 +224,7 @@ pub mod vector_ops {
         type Output = Result<Tensor<T>, VectorError>;
 
         fn rem(self, rhs: Self) -> Self::Output {
-            self.array_arithmetic(rhs, |a, b| *a % *b)
+            self.array_arithmetic(rhs, |a, b| a % b)
         }
     }
 
@@ -354,13 +355,62 @@ pub mod vector_ops {
             // TODO: comparing floats is evil
             assert!(t.data.into_iter().zip(vec![5.0; 25]).all(|(a, b)| a == b))
         }
+
+        #[test]
+        fn test_1d_iter() {
+            let t1 = Tensor::new(vec![1, 2, 3], None);
+
+            {
+                let mut iter = t1.value_iter();
+                assert!(iter.next() == Some(1));
+                assert!(iter.next() == Some(2));
+                assert!(iter.next() == Some(3));
+            }
+        }
+        #[test]
+        fn test_3d_iter() {
+            let vals: Vec<i32> = (0..16).collect();
+            {
+                let t1 = Tensor::new(vals.clone(), Some(vec![4, 2, 2]));
+
+                let data_iter = t1.value_iter();
+                let vals_iter = vals.clone().into_iter();
+
+                assert!(
+                    data_iter.into_iter().zip(vals_iter).all(|(a, b)| a == b),
+                    "t1 was {t1}\n data was {:?}",
+                    vals.clone()
+                );
+            }
+            {
+                let mut t2 = Tensor::new(vals.clone(), Some(vec![4, 2, 2]));
+                t2.transpose();
+
+                let data_iter = t2.value_iter();
+
+                let vals_iter = vec![0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]
+                    .clone()
+                    .into_iter();
+
+                assert!(
+                    data_iter.into_iter().zip(vals_iter).all(|(a, b)| a == b),
+                    "t2 was {t2}",
+                );
+            }
+        }
         #[test]
         fn test_1d_arithmetic() {
             let t1 = Tensor::<i64>::ones(&[5]);
             let t2 = Tensor::<i64>::ones(&[5]);
             let t3 = (&t1 + &t2).unwrap();
 
-            assert!(t3.data.into_iter().zip(vec![2; 5]).all(|(a, b)| a == b))
+            assert!(t3.value_iter().zip(vec![2; 5]).all(|(a, b)| a == b));
+
+            let t1 = Tensor::new(vec![1, 2, 3], None);
+            let t2 = Tensor::new(vec![1, 2, 3], None);
+            let t3 = (&t1 + &t2).unwrap();
+
+            assert!(t3.value_iter().zip(vec![2, 4, 6]).all(|(a, b)| a == b));
         }
         #[test]
         fn test_2d_arithmetic() {
@@ -368,7 +418,7 @@ pub mod vector_ops {
             let t2 = Tensor::<i64>::full(4, &[5, 5]);
             let t3 = (&t1 * &t2).unwrap();
 
-            assert!(t3.data.into_iter().zip(vec![16; 25]).all(|(a, b)| a == b))
+            assert!(t3.value_iter().zip(vec![16; 25]).all(|(a, b)| a == b))
         }
     }
 }
