@@ -411,6 +411,15 @@ pub mod vector_ops {
             let t3 = (&t1 + &t2).unwrap();
 
             assert!(t3.value_iter().zip(vec![2, 4, 6]).all(|(a, b)| a == b));
+
+            let t1 = Tensor::new(vec![1, 2, 3], None);
+            let t2 = Tensor::new(vec![1, 2, 3], None);
+            let t3 = (&t1 * &t2).unwrap();
+
+            assert!(
+                t3.value_iter().zip(vec![1, 4, 9]).all(|(a, b)| a == b),
+                "t3: \n {t3}"
+            );
         }
         #[test]
         fn test_2d_arithmetic() {

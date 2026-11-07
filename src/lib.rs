@@ -70,9 +70,12 @@ mod mini_numpy {
                     let new_vec = v1 + v2;
 
                     match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Int(new_vec),
-                        }),
+                        Ok(new_vec) => {
+                            println!("{}", new_vec);
+                            Ok(PyVector {
+                                data: VectorData::Int(new_vec),
+                            })
+                        }
                         Err(e) => {
                             todo!()
                         }
