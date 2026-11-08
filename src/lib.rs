@@ -24,6 +24,31 @@ mod mini_numpy {
         Int(Tensor<i32>),
         Float(Tensor<f32>),
     }
+    impl From<Tensor<i32>> for PyVector {
+        fn from(t: Tensor<i32>) -> Self {
+            PyVector {
+                data: VectorData::Int(t),
+            }
+        }
+    }
+
+    impl From<Tensor<f32>> for PyVector {
+        fn from(t: Tensor<f32>) -> Self {
+            PyVector {
+                data: VectorData::Float(t),
+            }
+        }
+    }
+
+    macro_rules! binary_op {
+    ($tensor_1: expr, $tensor_2:expr, $op:tt) => {
+        match (&$tensor_1.data, &$tensor_2.data) {
+            (VectorData::Int(v1), VectorData::Int(v2)) => Ok(((v1 $op v2)?).into()),
+            (VectorData::Float(v1), VectorData::Float(v2)) => Ok((v1 $op v2)?.into()),
+            _ => Err(PyTypeError::new_err("Types must match!")),
+        }
+    };
+}
 
     #[gen_stub_pymethods]
     #[pymethods]
@@ -42,16 +67,12 @@ mod mini_numpy {
                 None => None,
             };
             if let Ok(input) = input.extract::<Vec<i32>>() {
-                return Ok(Self {
-                    data: VectorData::Int(Tensor::new(input, shape)?),
-                });
+                Ok(Tensor::new(input, shape)?.into())
+            } else if let Ok(input) = input.extract::<Vec<f32>>() {
+                Ok(Tensor::new(input, shape)?.into())
+            } else {
+                Err(PyTypeError::new_err("Type unsupported"))
             }
-            if let Ok(input) = input.extract::<Vec<f32>>() {
-                return Ok(Self {
-                    data: VectorData::Float(Tensor::new(input, shape)?),
-                });
-            }
-            Err(PyTypeError::new_err("Type unsupported"))
         }
 
         fn __repr__(&self) -> String {
@@ -62,76 +83,24 @@ mod mini_numpy {
         }
 
         fn __add__(&self, other: &PyVector) -> PyResult<PyVector> {
-            let data_pair = (&self.data, &other.data);
-            match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
-                    data: VectorData::Int((v1 + v2)?),
-                }),
-                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
-                    data: VectorData::Float((v1 + v2)?),
-                }),
-
-                _ => Err(PyTypeError::new_err("Types must match!")),
-            }
+            binary_op!(self, &other, +)
         }
 
         fn __sub__(&self, other: &PyVector) -> PyResult<PyVector> {
-            let data_pair = (&self.data, &other.data);
-            match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
-                    data: VectorData::Int((v1 - v2)?),
-                }),
-                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
-                    data: VectorData::Float((v1 + v2)?),
-                }),
-
-                _ => Err(PyTypeError::new_err("Types must match!")),
-            }
+            binary_op!(self, &other, -)
         }
         fn __mul__(&self, other: &PyVector) -> PyResult<PyVector> {
-            let data_pair = (&self.data, &other.data);
-            match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
-                    data: VectorData::Int((v1 * v2)?),
-                }),
-                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
-                    data: VectorData::Float((v1 * v2)?),
-                }),
-
-                _ => Err(PyTypeError::new_err("Types must match!")),
-            }
+            binary_op!(self, &other, *)
         }
         fn __truediv__(&self, other: &PyVector) -> PyResult<PyVector> {
-            let data_pair = (&self.data, &other.data);
-            match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
-                    data: VectorData::Int((v1 / v2)?),
-                }),
-                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
-                    data: VectorData::Float((v1 / v2)?),
-                }),
-
-                _ => Err(PyTypeError::new_err("Types must match!")),
-            }
+            binary_op!(self, &other, /)
         }
         fn __mod__(&self, other: &PyVector) -> PyResult<PyVector> {
-            let data_pair = (&self.data, &other.data);
-            match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
-                    data: VectorData::Int((v1 % v2)?),
-                }),
-                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
-                    data: VectorData::Float((v1 % v2)?),
-                }),
-
-                _ => Err(PyTypeError::new_err("Types must match!")),
-            }
+            binary_op!(self, &other, %)
         }
 
         fn __eq__(&self, other: &PyVector) -> PyResult<bool> {
-            // This doesn't currently follow the actual numpy semantics that I want to recreate. A problem for another day!
-            let data_pair = (&self.data, &other.data);
-            match data_pair {
+            match (&self.data, &other.data) {
                 (VectorData::Int(v1), VectorData::Int(v2)) => Ok(v1.is_equal(v2)),
                 _ => Err(PyTypeError::new_err("Unsupported opperands")),
             }
