@@ -189,5 +189,36 @@ mod mini_numpy {
             data: VectorData::Int(Tensor::arange(start, stop, step)?),
         })
     }
+    #[gen_stub_pyfunction(module = "mini_numpy")]
+    #[pyfunction]
+    fn ones(shape: Vec<usize>) -> PyResult<PyVector> {
+        Ok(PyVector {
+            data: VectorData::Int(Tensor::ones(&shape)?),
+        })
+    }
+
+    #[gen_stub_pyfunction(module = "mini_numpy")]
+    #[pyfunction]
+    fn zeros(shape: Vec<usize>) -> PyResult<PyVector> {
+        Ok(PyVector {
+            data: VectorData::Int(Tensor::zeros(&shape)?),
+        })
+    }
+
+    #[gen_stub_pyfunction(module = "mini_numpy")]
+    #[pyfunction]
+    fn full(value: Bound<'_, PyAny>, shape: Vec<usize>) -> PyResult<PyVector> {
+        if let Ok(value) = value.extract::<i32>() {
+            Ok(PyVector {
+                data: VectorData::Int(Tensor::full(value, &shape)?),
+            })
+        } else if let Ok(value) = value.extract::<f32>() {
+            Ok(PyVector {
+                data: VectorData::Float(Tensor::full(value, &shape)?),
+            })
+        } else {
+            Err(PyTypeError::new_err("Type not supported!"))
+        }
+    }
 }
 define_stub_info_gatherer!(stub_info);

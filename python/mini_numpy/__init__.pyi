@@ -6,6 +6,9 @@ import typing
 __all__ = [
     "PyVector",
     "arange",
+    "full",
+    "ones",
+    "zeros",
 ]
 
 @typing.final
@@ -28,4 +31,10 @@ def arange(start: builtins.int, stop: typing.Optional[builtins.int] = None, step
     r"""
     It's arange - you know arange!
     """
+
+def full(value: typing.Any, shape: typing.Sequence[builtins.int]) -> PyVector: ...
+
+def ones(shape: typing.Sequence[builtins.int]) -> PyVector: ...
+
+def zeros(shape: typing.Sequence[builtins.int]) -> PyVector: ...
 
