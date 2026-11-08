@@ -1,4 +1,4 @@
-/// Defines operations on Vectors (tensors - need to cleanup the naming throught the project)
+/// Defines operations on Vectors (tensors - need to cleanup the naming throughout the project)
 pub mod vector_ops {
     // TODOS:
     // TODO: fancy indexing
@@ -10,7 +10,7 @@ pub mod vector_ops {
         ops::{Add, Div, Index, IndexMut, Mul, Rem, Sub},
     };
 
-    use num_traits::{One, Zero};
+    use num_traits::{Num, PrimInt};
 
     use crate::errors::VectorError;
 
@@ -25,9 +25,7 @@ pub mod vector_ops {
 
     impl<T> Tensor<T>
     where
-        T: Zero + One + Copy,
-        Vec<T>: FromIterator<T>,
-        std::ops::Range<T>: Iterator<Item = T>,
+        T: Num + Copy,
     {
         /// Array of Zeros
         pub fn zeros(shape: &[usize]) -> Result<Tensor<T>, VectorError> {
@@ -45,20 +43,29 @@ pub mod vector_ops {
                 Some(shape.to_owned()),
             )
         }
+    }
 
+    impl<T> Tensor<T>
+    where
+        T: PrimInt,
+        std::ops::Range<T>: Iterator<Item = T>,
+    {
         /// it's arange
         pub fn arange(
             start: T,
             stop: Option<T>,
-            step: Option<usize>,
+            step: Option<T>,
         ) -> Result<Tensor<T>, VectorError> {
-            let range: Vec<T> = match (stop, step) {
-                (None, None) => (T::zero()..start).collect(),
-                (Some(stop), None) => (start..stop).collect(),
-                (Some(stop), Some(step)) => (start..stop).step_by(step).collect(),
-                (None, Some(step)) => (T::zero()..start).step_by(step).collect(),
+            let step = step.unwrap_or(T::one());
+
+            let (start, stop) = match stop {
+                Some(stop) => (start, stop),
+                None => (T::zero(), start),
             };
-            Tensor::new(range, None)
+            let n_steps = (stop - start) / step;
+            let data = (T::zero()..n_steps).map(|i| start + i * step).collect();
+
+            Tensor::new(data, None)
         }
     }
 
@@ -432,6 +439,18 @@ pub mod vector_ops {
             let t3 = (&t1 * &t2).unwrap();
 
             assert!(t3.value_iter().zip(vec![16; 25]).all(|(a, b)| a == b))
+        }
+        #[test]
+        fn test_arange_base() {
+            let tensor = Tensor::arange(4, None, None).unwrap();
+            let truth = vec![0, 1, 2, 3];
+            assert!(tensor.data == truth)
+        }
+        #[test]
+        fn test_arange_fancy() {
+            let tensor = Tensor::arange(-2, Some(10), Some(2)).unwrap();
+            let truth = vec![-2, 0, 2, 4, 6, 8];
+            assert!(tensor.data == truth)
         }
     }
 }

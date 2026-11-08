@@ -5,6 +5,7 @@ import builtins
 import typing
 __all__ = [
     "PyVector",
+    "arange",
 ]
 
 @typing.final
@@ -22,4 +23,9 @@ class PyVector:
     def __eq__(self, other: PyVector) -> builtins.bool: ...
     def __getitem__(self, idx: typing.Any) -> typing.Any: ...
     def __setitem__(self, idx: typing.Any, value: typing.Any) -> None: ...
+
+def arange(start: builtins.int, stop: typing.Optional[builtins.int] = None, step: typing.Optional[builtins.int] = None) -> PyVector:
+    r"""
+    It's arange - you know arange!
+    """
 

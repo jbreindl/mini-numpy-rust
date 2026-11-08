@@ -10,7 +10,7 @@ mod mini_numpy {
 
     use crate::vecs;
     use pyo3::{exceptions::PyTypeError, prelude::*};
-    use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+    use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pyfunction, gen_stub_pymethods};
     use vecs::vector_ops::Tensor;
 
     #[gen_stub_pyclass]
@@ -179,6 +179,15 @@ mod mini_numpy {
                 Err(PyTypeError::new_err("Supplied index not supported!"))
             }
         }
+    }
+    #[gen_stub_pyfunction(module = "mini_numpy")]
+    #[pyfunction]
+    #[pyo3(signature=(start, stop=None, step=None))]
+    /// It's arange - you know arange!
+    fn arange(start: i32, stop: Option<i32>, step: Option<i32>) -> PyResult<PyVector> {
+        Ok(PyVector {
+            data: VectorData::Int(Tensor::arange(start, stop, step)?),
+        })
     }
 }
 define_stub_info_gatherer!(stub_info);
