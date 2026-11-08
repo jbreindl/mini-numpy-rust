@@ -74,3 +74,4 @@ docs/_build/
 
 # rust 
 !src/bin/
+*.dylib.*
