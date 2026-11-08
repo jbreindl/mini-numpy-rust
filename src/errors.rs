@@ -5,24 +5,33 @@ use pyo3::{PyErr, exceptions::PyValueError};
 /// Error if vector lengths don't match
 #[derive(Debug, Clone)]
 pub enum VectorError {
-    MismatchedLengthError(usize, usize),
+    IncompatibleShapeError(Vec<usize>, Vec<usize>),
+    ShapeNotPossibleError(Vec<usize>, usize),
 }
 
 impl fmt::Display for VectorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::MismatchedLengthError(a_len, b_len) => write!(
+            Self::IncompatibleShapeError(a_shape, b_shape) => write!(
                 f,
-                "Lenghts must match! found lenghts {} and {}",
-                a_len, b_len
+                "Shapes Incompatible! found lenghts {:#?} and {:#?}",
+                a_shape, b_shape
+            ),
+            Self::ShapeNotPossibleError(shape, data_len) => write!(
+                f,
+                "Shape {:#?} not possible for data with length {data_len}",
+                shape
             ),
         }
     }
 }
+
 impl From<VectorError> for PyErr {
     fn from(e: VectorError) -> PyErr {
+        let msg = e.to_string();
         match e {
-            VectorError::MismatchedLengthError(_a, _b) => PyValueError::new_err(e.to_string()),
+            VectorError::IncompatibleShapeError(_, _)
+            | VectorError::ShapeNotPossibleError(_, _) => PyValueError::new_err(msg),
         }
     }
 }

@@ -4,7 +4,7 @@ fn main() {
     {
         println!("2d Tensor:");
         let shape: Vec<usize> = vec![2, 3];
-        let mut tensor = vector_ops::Tensor::new((0..6).collect(), Some(shape));
+        let mut tensor = vector_ops::Tensor::new((0..6).collect(), Some(shape)).unwrap();
         println!("{tensor}");
 
         println!("2d after transpose");
@@ -15,7 +15,7 @@ fn main() {
     {
         println!("3d Tensor:");
         let shape: Vec<usize> = vec![2, 2, 2];
-        let mut tensor = vector_ops::Tensor::new((0..8).collect(), Some(shape));
+        let mut tensor = vector_ops::Tensor::new((0..8).collect(), Some(shape)).unwrap();
         println!("{tensor}");
 
         println!("3d after transpose");
@@ -26,7 +26,7 @@ fn main() {
     {
         println!("4d Tensor:");
         let shape: Vec<usize> = vec![2, 2, 2, 2];
-        let mut tensor = vector_ops::Tensor::new((0..16).collect(), Some(shape));
+        let mut tensor = vector_ops::Tensor::new((0..16).collect(), Some(shape)).unwrap();
         println!("{tensor}");
 
         println!("4d after transpose");

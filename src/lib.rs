@@ -8,8 +8,6 @@ pub mod vecs;
 #[pymodule]
 mod mini_numpy {
 
-    use std::ops::{Add, Div, Mul, Rem, Sub};
-
     use crate::vecs;
     use pyo3::{exceptions::PyTypeError, prelude::*};
     use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
@@ -45,12 +43,12 @@ mod mini_numpy {
             };
             if let Ok(input) = input.extract::<Vec<i32>>() {
                 return Ok(Self {
-                    data: VectorData::Int(Tensor::new(input, shape)),
+                    data: VectorData::Int(Tensor::new(input, shape)?),
                 });
             }
             if let Ok(input) = input.extract::<Vec<f32>>() {
                 return Ok(Self {
-                    data: VectorData::Float(Tensor::new(input, shape)),
+                    data: VectorData::Float(Tensor::new(input, shape)?),
                 });
             }
             Err(PyTypeError::new_err("Type unsupported"))
@@ -66,33 +64,13 @@ mod mini_numpy {
         fn __add__(&self, other: &PyVector) -> PyResult<PyVector> {
             let data_pair = (&self.data, &other.data);
             match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1 + v2;
+                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
+                    data: VectorData::Int((v1 + v2)?),
+                }),
+                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
+                    data: VectorData::Float((v1 + v2)?),
+                }),
 
-                    match new_vec {
-                        Ok(new_vec) => {
-                            println!("{}", new_vec);
-                            Ok(PyVector {
-                                data: VectorData::Int(new_vec),
-                            })
-                        }
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
-                (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1 + v2;
-
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Float(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
         }
@@ -100,120 +78,52 @@ mod mini_numpy {
         fn __sub__(&self, other: &PyVector) -> PyResult<PyVector> {
             let data_pair = (&self.data, &other.data);
             match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1 - v2;
+                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
+                    data: VectorData::Int((v1 - v2)?),
+                }),
+                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
+                    data: VectorData::Float((v1 + v2)?),
+                }),
 
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Int(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
-                (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1 - v2;
-
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Float(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
         }
         fn __mul__(&self, other: &PyVector) -> PyResult<PyVector> {
             let data_pair = (&self.data, &other.data);
             match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1 * v2;
+                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
+                    data: VectorData::Int((v1 * v2)?),
+                }),
+                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
+                    data: VectorData::Float((v1 * v2)?),
+                }),
 
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Int(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
-                (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1 * v2;
-
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Float(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
         }
         fn __truediv__(&self, other: &PyVector) -> PyResult<PyVector> {
             let data_pair = (&self.data, &other.data);
             match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1 / v2;
+                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
+                    data: VectorData::Int((v1 / v2)?),
+                }),
+                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
+                    data: VectorData::Float((v1 / v2)?),
+                }),
 
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Int(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
-                (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1 / v2;
-
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Float(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
         }
         fn __mod__(&self, other: &PyVector) -> PyResult<PyVector> {
             let data_pair = (&self.data, &other.data);
             match data_pair {
-                (VectorData::Int(v1), VectorData::Int(v2)) => {
-                    let new_vec = v1 % v2;
+                (VectorData::Int(v1), VectorData::Int(v2)) => Ok(PyVector {
+                    data: VectorData::Int((v1 % v2)?),
+                }),
+                (VectorData::Float(v1), VectorData::Float(v2)) => Ok(PyVector {
+                    data: VectorData::Float((v1 % v2)?),
+                }),
 
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Int(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
-                (VectorData::Float(v1), VectorData::Float(v2)) => {
-                    let new_vec = v1 % v2;
-
-                    match new_vec {
-                        Ok(new_vec) => Ok(PyVector {
-                            data: VectorData::Float(new_vec),
-                        }),
-                        Err(e) => {
-                            todo!()
-                        }
-                    }
-                }
                 _ => Err(PyTypeError::new_err("Types must match!")),
             }
         }
@@ -242,7 +152,7 @@ mod mini_numpy {
         }
         fn __setitem__<'py>(
             &mut self,
-            py: Python<'py>,
+            _py: Python<'py>,
             idx: Bound<'py, PyAny>,
             value: Bound<'py, PyAny>,
         ) -> Result<(), PyErr> {
@@ -269,23 +179,6 @@ mod mini_numpy {
                 Err(PyTypeError::new_err("Supplied index not supported!"))
             }
         }
-    }
-    fn add<T: Add + Copy>(a: &T, b: &T) -> <T as Add>::Output {
-        *a + *b
-    }
-    fn sub<T: Sub + Copy>(a: &T, b: &T) -> <T as Sub>::Output {
-        *a - *b
-    }
-    fn div<T: Div + Copy>(a: &T, b: &T) -> <T as Div>::Output {
-        *a / *b
-    }
-
-    fn mul<T: Mul + Copy>(a: &T, b: &T) -> <T as Mul>::Output {
-        *a * *b
-    }
-
-    fn rem<T: Rem + Copy>(a: &T, b: &T) -> <T as Rem>::Output {
-        *a % *b
     }
 }
 define_stub_info_gatherer!(stub_info);
